@@ -45,25 +45,49 @@ echo "Found prompt:   ${PROMPT_FILE}"
 echo ""
 
 ### --------------------------------
+### Clean RC files (user)
+### --------------------------------
+rm -f "${HOME}/.shrc" "${HOME}/.bashrc" "${HOME}/.zshrc"
+
+### --------------------------------
+### Clean RC files (root)
+### --------------------------------
+if [ "${OS}" != "windows" ]; then
+	sudo rm -f "/root/.shrc" "/root/.bashrc" "/root/.zshrc"
+fi
+
+### --------------------------------
 ### Install Oh-My-Zsh / Oh-My-Bash
 ### --------------------------------
 case "${SHELL_NAME}" in
 	zsh)
 		if [ ! -d "${HOME}/.oh-my-zsh" ]; then
 			KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended
+		else
+			cp "${HOME}/.oh-my-zsh/templates/zshrc.zsh-template" "${HOME}/.zshrc"
 		fi
-		if [ "${OS}" != "windows" ] && [ ! -d "/root/.oh-my-zsh" ]; then
-			sudo env KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended'
+		if [ "${OS}" != "windows" ]; then
+			if [ ! -d "/root/.oh-my-zsh" ]; then
+				sudo env KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended'
+			else
+				sudo cp "/root/.oh-my-zsh/templates/zshrc.zsh-template" "/root/.zshrc"
+			fi
 		fi
 		;;
 	bash)
 		if [ ! -d "${HOME}/.oh-my-bash" ]; then
 			KEEP_BASHRC=no curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended
-			sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "${HOME}/.bashrc" && rm -f "${HOME}/.bashrc.bak"
+		else
+			cp "${HOME}/.oh-my-bash/templates/bashrc.osh-template" "${HOME}/.bashrc"
 		fi
-		if [ "${OS}" != "windows" ] && [ ! -d "/root/.oh-my-bash" ]; then
-			sudo env KEEP_BASHRC=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended'
-			sudo sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' /root/.bashrc && sudo rm -f /root/.bashrc.bak
+		sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "${HOME}/.bashrc" && rm -f "${HOME}/.bashrc.bak"
+		if [ "${OS}" != "windows" ]; then
+			if [ ! -d "/root/.oh-my-bash" ]; then
+				sudo env KEEP_BASHRC=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended'
+			else
+				sudo cp "/root/.oh-my-bash/templates/bashrc.osh-template" "/root/.bashrc"
+			fi
+			sudo sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "/root/.bashrc" && sudo rm -f "/root/.bashrc.bak"
 		fi
 		;;
 esac
