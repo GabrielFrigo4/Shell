@@ -31,6 +31,16 @@ echo "Detected OS:    ${OS}"
 echo "Detected shell: ${SHELL_NAME}"
 
 ### --------------------------------
+### Permissions (shell repo)
+### --------------------------------
+if [ "${OS}" != "windows" ]; then
+	sudo chown -R "$(id -un):$(id -gn)" "${SHELL_REPO_DIR}"
+	sudo find "${SHELL_REPO_DIR}" -type d -exec chmod 755 {} +
+	sudo find "${SHELL_REPO_DIR}" -type f -exec chmod 644 {} +
+	sudo find "${SHELL_REPO_DIR}" -name "*.sh" -exec chmod 755 {} +
+fi
+
+### --------------------------------
 ### Validate
 ### --------------------------------
 PROMPT_FILE="${SHELL_REPO_DIR}/os/${OS}/${SHELL_NAME}/prompt.sh"
