@@ -52,7 +52,6 @@ if [ ! -f "${PROMPT_FILE}" ]; then
 fi
 
 echo "Found prompt:   ${PROMPT_FILE}"
-echo ""
 
 ### --------------------------------
 ### Determine RC file (user)
@@ -121,7 +120,6 @@ case "${SHELL_NAME}" in
 		fi
 		;;
 esac
-echo ""
 
 ### --------------------------------
 ### Source lines to inject
@@ -137,7 +135,6 @@ CORE_FUNC_LINE="${SOURCE_CMD} \"${SHELL_REPO_DIR}/core/functions.sh\""
 CORE_VAULT_LINE="${SOURCE_CMD} \"${SHELL_REPO_DIR}/core/vault.sh\""
 
 echo "Target RC file: ${RC_FILE}"
-echo ""
 
 ### --------------------------------
 ### Install (user)
@@ -151,7 +148,6 @@ else
 	echo "${CORE_FUNC_LINE}" >> "${RC_FILE}"
 	echo "${CORE_VAULT_LINE}" >> "${RC_FILE}"
 	echo "${SOURCE_LINE}" >> "${RC_FILE}"
-	echo ""
 	echo "Done! Added source lines to ${RC_FILE}"
 	echo "Restart your shell or run: . ${RC_FILE}"
 fi
@@ -160,9 +156,7 @@ fi
 ### Install (root)
 ### --------------------------------
 if [ "${OS}" != "windows" ]; then
-	echo ""
 	echo "Target RC file: ${ROOT_RC_FILE} (root)"
-	echo ""
 	if sudo grep -qF "${SOURCE_LINE}" "${ROOT_RC_FILE}" 2> "/dev/null"; then
 		echo "Shell config already installed in ${ROOT_RC_FILE}"
 		echo "Skipping."
@@ -172,7 +166,6 @@ if [ "${OS}" != "windows" ]; then
 		echo "${CORE_FUNC_LINE}" | sudo tee -a "${ROOT_RC_FILE}" > "/dev/null"
 		echo "${CORE_VAULT_LINE}" | sudo tee -a "${ROOT_RC_FILE}" > "/dev/null"
 		echo "${SOURCE_LINE}" | sudo tee -a "${ROOT_RC_FILE}" > "/dev/null"
-		echo ""
 		echo "Done! Added source lines to ${ROOT_RC_FILE}"
 	fi
 fi

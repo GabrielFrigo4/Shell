@@ -14,8 +14,8 @@ sh "/usr/local/share/shell/install.sh"
 **MSYS2 (Windows):**
 
 ```sh
-git clone "https://github.com/GabrielFrigo4/Shell" "/usr/local/share/shell"
-sh "/usr/local/share/shell/install.sh"
+git clone "https://github.com/GabrielFrigo4/Shell" "${HOME}/.shell"
+sh "${HOME}/.shell/install.sh"
 ```
 
 Reinicie o shell ou recarregue o RC manualmente:
