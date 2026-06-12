@@ -131,39 +131,9 @@ export MICRO_TRUECOLOR=1
 	local sh_name="$ZSH_NAME"
 
 	export PROMPT="
-${y}${B} ${M}${os_version}${y}─${B} ${M}${sh_name}${y}
-${y}┌──❮ ${G} %*${y} ❯─❮ ${G} %D{%d/%m/%y}${y} ❯─❮ ${Y} ${C}%c${y} ❯─ ❮${B} ${u}%n${y}❯ \$(git_branch)
-${y}└─${B}${z} "
-}
-
-### ================================
-### WINDOWS FUNCTIONS
-### ================================
-
-### --------------------------------
-### Manual
-### --------------------------------
-win-man() {
-	start "https://learn.microsoft.com/en-us/search/?terms=${1}"
-}
-
-### ================================
-### UNIX FUNCTIONS
-### ================================
-
-### --------------------------------
-### Manual
-### --------------------------------
-unix-man() {
-	section="${1}"
-	command="${2}"
-	number="$section"
-
-	if [[ ! "$section" =~ [0-9]$ ]]; then
-		number="${section%?}"
-	fi
-
-	w3m "https://www.man7.org/linux/man-pages/man$number/$command.$section.html"
+${y}${B} ${M}${os_version}${y}─${B} ${M}${sh_name}${y}
+${y}┌──❮ ${G} %*${y} ❯─❮ ${G} %D{%d/%m/%y}${y} ❯─❮ ${Y} ${C}%c${y} ❯─ ❮${B} ${u}%n${y}❯ \$(git_branch)
+${y}└─${B}${z} "
 }
 
 ### ================================
@@ -189,9 +159,7 @@ alias mandoc="unix-man"
 ### --------------------------------
 alias upyay="yay --noconfirm -Syu"
 alias upflat="flatpak update -y"
-alias upsh="omz update"
-alias upall="upsh && upyay && upflat"
-alias backusb="./\"#BackupAll\""
+alias upall="upyay && upflat"
 alias yays="yay -Ss"
 alias yayi="yay -S"
 alias yayr="yay -Rcns"

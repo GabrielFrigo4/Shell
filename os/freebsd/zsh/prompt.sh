@@ -137,9 +137,9 @@ export MICRO_TRUECOLOR=1
 	local sh_name="$ZSH_NAME"
 
 	export PROMPT="
-${y}${R} ${M}${os_version}${y}─${B} ${M}${sh_name}${y}
-${y}┌──❮ ${G} %*${y} ❯─❮ ${G} %D{%d/%m/%y}${y} ❯─❮ ${Y} ${C}%c${y} ❯─ ❮${B} ${u}%n${y}❯ \$(git_branch)
-${y}└─${B}${z} "
+${y}${R} ${M}${os_version}${y}─${B} ${M}${sh_name}${y}
+${y}┌──❮ ${G} %*${y} ❯─❮ ${G} %D{%d/%m/%y}${y} ❯─❮ ${Y} ${C}%c${y} ❯─ ❮${B} ${u}%n${y}❯ \$(git_branch)
+${y}└─${B}${z} "
 }
 
 ### ================================

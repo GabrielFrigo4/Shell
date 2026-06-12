@@ -70,42 +70,12 @@ update_prompt() {
 		usr_color="${C_BRT_GREEN}"
 	fi
 
-	PS1="\n${C_NORM_YELLOW}${C_BRT_BLUE} ${C_BRT_MAGENTA}${os_version}${C_NORM_YELLOW}─${C_BRT_BLUE} ${C_BRT_MAGENTA}${sh_name}${C_NORM_YELLOW}"
-	PS1+="\n${C_NORM_YELLOW}┌──❮ ${C_BRT_GREEN} \t${C_NORM_YELLOW} ❯─❮ ${C_BRT_GREEN} \D{%d/%m/%y}${C_NORM_YELLOW} ❯─❮ ${C_BRT_YELLOW} ${C_BRT_CYAN}\W${C_NORM_YELLOW} ❯─ ❮${C_BRT_BLUE} ${usr_color}\u${C_NORM_YELLOW}❯ $(git_branch)"
-	PS1+="\n${C_NORM_YELLOW}└─${C_BRT_BLUE}${C_RESET} "
+	PS1="\n${C_NORM_YELLOW}${C_BRT_BLUE} ${C_BRT_MAGENTA}${os_version}${C_NORM_YELLOW}─${C_BRT_BLUE} ${C_BRT_MAGENTA}${sh_name}${C_NORM_YELLOW}"
+	PS1+="\n${C_NORM_YELLOW}┌──❮ ${C_BRT_GREEN} \t${C_NORM_YELLOW} ❯─❮ ${C_BRT_GREEN} \D{%d/%m/%y}${C_NORM_YELLOW} ❯─❮ ${C_BRT_YELLOW} ${C_BRT_CYAN}\W${C_NORM_YELLOW} ❯─ ❮${C_BRT_BLUE} ${usr_color}\u${C_NORM_YELLOW}❯ $(git_branch)"
+	PS1+="\n${C_NORM_YELLOW}└─${C_BRT_BLUE}${C_RESET} "
 }
 
 PROMPT_COMMAND=update_prompt
-
-### ================================
-### WINDOWS FUNCTIONS
-### ================================
-
-### --------------------------------
-### Manual
-### --------------------------------
-win-man() {
-	start "https://learn.microsoft.com/en-us/search/?terms=${1}"
-}
-
-### ================================
-### UNIX FUNCTIONS
-### ================================
-
-### --------------------------------
-### Manual
-### --------------------------------
-unix-man() {
-	section="${1}"
-	command="${2}"
-	number="$section"
-
-	if [[ ! "$section" =~ [0-9]$ ]]; then
-		number="${section%?}"
-	fi
-
-	w3m "https://www.man7.org/linux/man-pages/man$number/$command.$section.html"
-}
 
 ### ================================
 ### SHELL ALIAS
@@ -130,9 +100,7 @@ alias mandoc="unix-man"
 ### --------------------------------
 alias upyay="yay --noconfirm -Syu"
 alias upflat="flatpak update -y"
-alias upsh="omz update"
-alias upall="upsh && upyay && upflat"
-alias backusb="./\"#BackupAll\""
+alias upall="upyay && upflat"
 alias yays="yay -Ss"
 alias yayi="yay -S"
 alias yayr="yay -Rcns"
