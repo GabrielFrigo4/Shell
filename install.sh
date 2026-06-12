@@ -55,15 +55,35 @@ echo "Found prompt:   ${PROMPT_FILE}"
 echo ""
 
 ### --------------------------------
-### Clean RC files (user)
+### Determine RC file (user)
 ### --------------------------------
-rm -f "${HOME}/.shrc" "${HOME}/.bashrc" "${HOME}/.zshrc"
+case "${SHELL_NAME}" in
+	bash) RC_FILE="${HOME}/.bashrc" ;;
+	zsh)  RC_FILE="${HOME}/.zshrc" ;;
+	sh)   RC_FILE="${HOME}/.shrc" ;;
+	*)    RC_FILE="${HOME}/.${SHELL_NAME}rc" ;;
+esac
 
 ### --------------------------------
-### Clean RC files (root)
+### Determine RC file (root)
+### --------------------------------
+case "${SHELL_NAME}" in
+	bash) ROOT_RC_FILE="/root/.bashrc" ;;
+	zsh)  ROOT_RC_FILE="/root/.zshrc" ;;
+	sh)   ROOT_RC_FILE="/root/.shrc" ;;
+	*)    ROOT_RC_FILE="/root/.${SHELL_NAME}rc" ;;
+esac
+
+### --------------------------------
+### Clean RC file (user)
+### --------------------------------
+rm -f "${RC_FILE}"
+
+### --------------------------------
+### Clean RC file (root)
 ### --------------------------------
 if [ "${OS}" != "windows" ]; then
-	sudo rm -f "/root/.shrc" "/root/.bashrc" "/root/.zshrc"
+	sudo rm -f "${ROOT_RC_FILE}"
 fi
 
 ### --------------------------------
@@ -115,26 +135,6 @@ SOURCE_LINE="${SOURCE_CMD} \"${PROMPT_FILE}\""
 CORE_ENV_LINE="${SOURCE_CMD} \"${SHELL_REPO_DIR}/core/environment.sh\""
 CORE_FUNC_LINE="${SOURCE_CMD} \"${SHELL_REPO_DIR}/core/functions.sh\""
 CORE_VAULT_LINE="${SOURCE_CMD} \"${SHELL_REPO_DIR}/core/vault.sh\""
-
-### --------------------------------
-### Determine RC file (user)
-### --------------------------------
-case "${SHELL_NAME}" in
-	bash) RC_FILE="${HOME}/.bashrc" ;;
-	zsh)  RC_FILE="${HOME}/.zshrc" ;;
-	sh)   RC_FILE="${HOME}/.shrc" ;;
-	*)    RC_FILE="${HOME}/.${SHELL_NAME}rc" ;;
-esac
-
-### --------------------------------
-### Determine RC file (root)
-### --------------------------------
-case "${SHELL_NAME}" in
-	bash) ROOT_RC_FILE="/root/.bashrc" ;;
-	zsh)  ROOT_RC_FILE="/root/.zshrc" ;;
-	sh)   ROOT_RC_FILE="/root/.shrc" ;;
-	*)    ROOT_RC_FILE="/root/.${SHELL_NAME}rc" ;;
-esac
 
 echo "Target RC file: ${RC_FILE}"
 echo ""
