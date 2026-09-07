@@ -3,7 +3,7 @@
 > _"Rule of Silence: When a program has nothing surprising to say, it should say nothing."_<br>
 > — Eric S. Raymond, _The Art of UNIX Programming_ (2003)
 
-O repositório **Universal Shell Environment** é o coração interativo da **Tríade de Produtividade** (`Configuration`, `Shell`, `Vault`). Ele é responsável por prover uma experiência consistente, ágil e prazerosa na linha de comando, independentemente de estarmos em uma máquina Desktop, Servidor, Container Docker/Jail ou WSL, rodando sobre FreeBSD, Linux ou Windows.
+O repositório **Universal Shell Environment** é o coração interativo do **Quarteto de Produtividade** (`Setup`, `Profile`, `Shell`, `Vault`). Ele é responsável por prover uma experiência consistente, ágil e prazerosa na linha de comando, independentemente de estarmos em uma máquina Desktop, Servidor, Container Docker/Jail ou WSL, rodando sobre FreeBSD, Linux ou Windows.
 
 Para garantir que o terminal permaneça instantâneo, extensível e agradável no dia a dia, todas as contribuições devem seguir com fidelidade os **18 Princípios de Engenharia** (17 Princípios UNIX de Eric S. Raymond + Regra da Soberania do Usuário), as diretrizes de **Clean Code** adaptadas ao ecossistema de shells, e os padrões de performance interativa.
 

@@ -1,6 +1,20 @@
 # 🐚 Universal Shell Environment
 
-> Configurações, aliases e prompts centralizados para todos os seus ambientes de sistema, mantendo a experiência consistente seja no Desktop, Servidor, Contêiner ou WSL.
+> Configurações, aliases e prompts centralizados para todos os seus ambientes de sistema, mantendo a experiência consistente seja no Desktop, Servidor, Contêiner ou WSL. Componente de runtime interativo do **Quarteto de Produtividade**.
+
+---
+
+### 🏛️ O Quarteto de Produtividade
+
+[![Setup](https://img.shields.io/badge/📦_Setup-Sistema_%26_Cookbook-blue)](https://github.com/GabrielFrigo4/Setup)
+[![Profile](https://img.shields.io/badge/🎨_Profile-Dotfiles_%26_IA-green)](https://github.com/GabrielFrigo4/Profile)
+[![Shell](https://img.shields.io/badge/🐚_Shell-Terminal_Runtime-purple)](https://github.com/GabrielFrigo4/Shell)
+[![Vault](https://img.shields.io/badge/🔐_Vault-Cofre_Privado-red)](https://github.com/GabrielFrigo4/Vault)
+
+> 📖 **Arquitetura Unificada do Ecossistema:** Conheça a matriz completa de responsabilidades, ciclo de boot e segregação de privilégios em [ENVIRONMENT.md](ENVIRONMENT.md).
+> 📜 **Princípios de Engenharia:** Conheça os 18 princípios UNIX e boas práticas Clean Code aplicadas a este shell em [PRINCIPLES.md](PRINCIPLES.md).
+
+---
 
 ### Sistemas Suportados
 
@@ -55,7 +69,7 @@ flowchart LR
 
 > 💤 **Nota sobre o Dash:** O shell `dash` permanece em estado dormente (delegando para o `sh`). Como o parser estrito do `dash` rejeita a declaração de funções em `kebab-case` (`path-front()`, `mount-device()`), optamos por não comprometer a arquitetura Clean Code do projeto por causa dele. Caso o `dash` implemente essa compatibilidade no futuro, o suporte florescerá!
 
-> 📖 **Princípios de Engenharia:** Conheça os 18 princípios UNIX e boas práticas Clean Code aplicadas a este shell em [PRINCIPLES.md](PRINCIPLES.md).
+---
 
 ## 🚀 Instalação
 
