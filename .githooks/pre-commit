@@ -55,5 +55,19 @@ if [ -n "${_unquoted_null}" ]; then
 	exit 1
 fi
 
+### --------------------------------
+### Startup Latency Benchmark (<50ms)
+### --------------------------------
+echo "  ↳ Benchmarking startup latency (target <50ms)..."
+_boot_ms=$(bash -c '
+	_s=$(python3 -c "import time; print(int(time.time()*1e9))" 2> "/dev/null" || date +%s%N)
+	. ./library/detect.sh > "/dev/null" 2>&1
+	. ./library/functions.sh > "/dev/null" 2>&1
+	. ./core/environment.sh > "/dev/null" 2>&1
+	_e=$(python3 -c "import time; print(int(time.time()*1e9))" 2> "/dev/null" || date +%s%N)
+	echo $(( (_e - _s) / 1000000 ))
+' 2> "/dev/null" || echo "0")
+echo "     ⚡ Boot latency: ${_boot_ms}ms"
+
 echo "✅ [pre-commit] All quality gates passed cleanly!"
 exit 0

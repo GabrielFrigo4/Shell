@@ -20,4 +20,3 @@ alias h='fc -l'
 alias j='jobs'
 alias m="${PAGER:-less}"
 alias history='fc -l'
-
