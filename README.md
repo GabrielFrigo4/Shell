@@ -78,6 +78,7 @@ bash "${HOME}/.shell/install.sh" --context desktop
 | `update-all` / `upall` / `u` | **Orquestrador Global:** Atualiza SO + AUR + Flatpak + Snap.       | Universal             |
 | `update-shell` / `upsh`      | Atualiza o repositório do shell (`git pull`) e recarrega a sessão. | Universal             |
 | `update-vault` / `upvt`      | Sincroniza segredos (`~/.vault`) e recarrega chaves SSH.           | Universal             |
+| `bench-shell` / `bsh`        | Mede a latência de inicialização dos shells e módulos isolados.    | Universal             |
 | `update-wifi` / `upwf`       | Sincroniza credenciais Wi-Fi configuradas com o SO.                | Linux, BSD, Windows   |
 | `editor [alvo]` / `e`        | Abre o editor padrão configurado na cascata de prioridade.         | `$VISUAL` / `$EDITOR` |
 | `mount-device` / `mntdev`    | Monta celular em `~/Device` via GVfs/KIO-FUSE/GSConnect/ADB.       | Desktop               |

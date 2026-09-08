@@ -124,12 +124,14 @@ case "${SHELL_NAME}" in
 		else
 			cp "${HOME}/.oh-my-zsh/templates/zshrc.zsh-template" "${HOME}/.zshrc"
 		fi
+		sed -i.bak "s/^# zstyle ':omz:update' mode disabled/zstyle ':omz:update' mode disabled/" "${HOME}/.zshrc" && rm -f "${HOME}/.zshrc.bak"
 		if [ "${OS_NAME}" != "windows" ]; then
 			if [ ! -d "/root/.oh-my-zsh" ]; then
 				_as_root env KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended'
 			else
 				_as_root cp "/root/.oh-my-zsh/templates/zshrc.zsh-template" "/root/.zshrc"
 			fi
+			_as_root sed -i.bak "s/^# zstyle ':omz:update' mode disabled/zstyle ':omz:update' mode disabled/" "/root/.zshrc" && _as_root rm -f "/root/.zshrc.bak"
 		fi
 		;;
 	bash)
@@ -139,6 +141,7 @@ case "${SHELL_NAME}" in
 			cp "${HOME}/.oh-my-bash/templates/bashrc.osh-template" "${HOME}/.bashrc"
 		fi
 		sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "${HOME}/.bashrc" && rm -f "${HOME}/.bashrc.bak"
+		sed -i.bak 's/^# DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "${HOME}/.bashrc" && rm -f "${HOME}/.bashrc.bak"
 		if [ "${OS_NAME}" != "windows" ]; then
 			if [ ! -d "/root/.oh-my-bash" ]; then
 				_as_root env KEEP_BASHRC=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended'
@@ -146,6 +149,7 @@ case "${SHELL_NAME}" in
 				_as_root cp "/root/.oh-my-bash/templates/bashrc.osh-template" "/root/.bashrc"
 			fi
 			_as_root sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "/root/.bashrc" && _as_root rm -f "/root/.bashrc.bak"
+			_as_root sed -i.bak 's/^# DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "/root/.bashrc" && _as_root rm -f "/root/.bashrc.bak"
 		fi
 		;;
 esac

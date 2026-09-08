@@ -10,14 +10,15 @@ O **Universal Shell Environment** adota uma convenção estrita de nomenclatura 
 
 ## 1. ⚙️ Shell, Ambiente & Vault (Universais)
 
-| Comando / Alias            | Descrição                                                                                     | Compatibilidade       |
-| :------------------------- | :-------------------------------------------------------------------------------------------- | :-------------------- |
-| `update-shell` / `upsh`    | Sincroniza o repositório local do shell (`git pull`) e recarrega a sessão.                    | Universal             |
-| `reinstall-shell` / `resh` | Reexecuta o instalador `install.sh` preservando o contexto ativo (`desktop`, `server`, etc.). | Universal             |
-| `update-vault` / `upvt`    | Sincroniza o repositório do cofre (`~/.vault`) e recarrega chaves e variáveis.                | Linux, FreeBSD, macOS |
-| `path-front <dir>`         | Insere um diretório no início do `$PATH` (prioridade máxima).                                 | Universal             |
-| `path-back <dir>`          | Insere um diretório no fim do `$PATH` (prioridade mínima).                                    | Universal             |
-| `path-dedup`               | Remove diretórios duplicados do `$PATH` preservando a ordem original.                         | Universal             |
+| Comando / Alias                       | Descrição                                                                                     | Compatibilidade       |
+| :------------------------------------ | :-------------------------------------------------------------------------------------------- | :-------------------- |
+| `update-shell` / `upsh`               | Sincroniza o repositório local do shell (`git pull`) e recarrega a sessão.                    | Universal             |
+| `reinstall-shell` / `resh`            | Reexecuta o instalador `install.sh` preservando o contexto ativo (`desktop`, `server`, etc.). | Universal             |
+| `update-vault` / `upvt`               | Sincroniza o repositório do cofre (`~/.vault`) e recarrega chaves e variáveis.                | Linux, FreeBSD, macOS |
+| `bench-shell` / `bsh` / `shell-bench` | Mede a latência de inicialização dos shells (`sh`, `bash`, `zsh`) e módulos isolados.         | Universal             |
+| `path-front <dir>`                    | Insere um diretório no início do `$PATH` (prioridade máxima).                                 | Universal             |
+| `path-back <dir>`                     | Insere um diretório no fim do `$PATH` (prioridade mínima).                                    | Universal             |
+| `path-dedup`                          | Remove diretórios duplicados do `$PATH` preservando a ordem original.                         | Universal             |
 
 ---
 

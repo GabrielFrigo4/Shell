@@ -244,6 +244,12 @@ alias ....="cd ../../.."
 alias -- -="cd -"
 
 ### --------------------------------
+### Universal Benchmark Aliases
+### --------------------------------
+alias bsh="bench-shell"
+alias shell-bench="bench-shell"
+
+### --------------------------------
 ### Universal Update Aliases
 ### --------------------------------
 alias u="update-all"

@@ -56,6 +56,14 @@ update-shell() {
 	if [ -n "${SHELL_REPO_DIR}" ] && [ -d "${SHELL_REPO_DIR}" ]; then
 		echo "🔄 Updating shell repository at ${SHELL_REPO_DIR}..."
 		command git -C "${SHELL_REPO_DIR}" pull
+		if [ -d "${OSH:-${HOME}/.oh-my-bash}" ]; then
+			echo "🔄 Updating Oh-My-Bash..."
+			command git -C "${OSH:-${HOME}/.oh-my-bash}" pull --ff-only 2> "/dev/null" || true
+		fi
+		if [ -d "${ZSH:-${HOME}/.oh-my-zsh}" ]; then
+			echo "🔄 Updating Oh-My-Zsh..."
+			command git -C "${ZSH:-${HOME}/.oh-my-zsh}" pull --ff-only 2> "/dev/null" || true
+		fi
 		echo "♻️ Reloading shell environment..."
 		. "${HOME}/.$(_detect_shell)rc" 2> "/dev/null" || true
 	else
@@ -87,6 +95,18 @@ reinstall-shell() {
 	. "${HOME}/.$(_detect_shell)rc" 2> "/dev/null" || true
 
 	echo "✅ Shell fully reinstalled and reloaded!"
+}
+
+### --------------------------------
+### Benchmark Shell
+### --------------------------------
+bench-shell() {
+	if [ -n "${SHELL_REPO_DIR}" ] && [ -f "${SHELL_REPO_DIR}/scripts/benchmark.sh" ]; then
+		sh "${SHELL_REPO_DIR}/scripts/benchmark.sh" "$@"
+	else
+		echo "❌ ERROR: Benchmark script not found in ${SHELL_REPO_DIR}/scripts/benchmark.sh."
+		return 1
+	fi
 }
 
 ### --------------------------------
