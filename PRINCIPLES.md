@@ -16,11 +16,11 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 > _Escreva partes simples conectadas por interfaces limpas._
 
 - O Shell é rigidamente dividido em:
-  - `core/`: O ciclo de vida base e carregamento do ambiente.
-  - `context/`: Especializações de acordo com a máquina (`desktop`, `server`, `container`, `wsl`).
-  - `target/`: Especializações de acordo com o sistema operacional (`linux`, `freebsd`, `windows`).
-  - `library/`: Funções utilitárias reutilizáveis.
-  - `theme/`: Renderização visual de prompts (Bash, Zsh, Sh).
+    - `core/`: O ciclo de vida base e carregamento do ambiente.
+    - `context/`: Especializações de acordo com a máquina (`desktop`, `server`, `container`, `wsl`).
+    - `target/`: Especializações de acordo com o sistema operacional (`linux`, `freebsd`, `windows`).
+    - `library/`: Funções utilitárias reutilizáveis.
+    - `theme/`: Renderização visual de prompts (Bash, Zsh, Sh).
 
 ### 2. Regra da Clareza (_Rule of Clarity_)
 
@@ -114,9 +114,9 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 > _Desconfie de todas as afirmações de "uma única maneira verdadeira"._
 
 - Compatibilidade universal com múltiplos shells:
-  - **Zsh:** Shell primário interativo moderno com autocompletion avançado.
-  - **Bash:** Shell padrão universal presente na maioria das distribuições Linux e servidores.
-  - **Sh:** Shell POSIX leve e fundamental (FreeBSD `/bin/sh`, Debian `dash`), essencial para inicialização rápida e sistemas embarcados.
+    - **Zsh:** Shell primário interativo moderno com autocompletion avançado.
+    - **Bash:** Shell padrão universal presente na maioria das distribuições Linux e servidores.
+    - **Sh:** Shell POSIX leve e fundamental (FreeBSD `/bin/sh`, Debian `dash`), essencial para inicialização rápida e sistemas embarcados.
 
 ### 17. Regra da Extensibilidade (_Rule of Extensibility_)
 
@@ -137,32 +137,32 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 ## 🧼 Clean Code no Shell Scripting
 
 1. **Funções Pequenas e Focadas:**
-   - Funções em scripts de shell devem ter no máximo 15-20 linhas e resolver um único problema.
+    - Funções em scripts de shell devem ter no máximo 15-20 linhas e resolver um único problema.
 2. **DRY (Don't Repeat Yourself):**
-   - Não repita código de detecção de SO ou manipulação de strings em múltiplos arquivos. Use as funções centralizadas em `library/`.
+    - Não repita código de detecção de SO ou manipulação de strings em múltiplos arquivos. Use as funções centralizadas em `library/`.
 3. **Escopo Limpo de Variáveis:**
-   - Em funções de shell (Bash/Zsh), use sempre a palavra-chave `local` para variáveis internas temporárias, evitando poluir o escopo global da sessão interativa do usuário.
+    - Em funções de shell (Bash/Zsh), use sempre a palavra-chave `local` para variáveis internas temporárias, evitando poluir o escopo global da sessão interativa do usuário.
 4. **Shebang Padrão Absoluto (`#!/usr/bin/env sh`):**
-   - Todo script executável de shell neste repositório DEVE iniciar com `#!/usr/bin/env sh`.
-   - Evita caminhos rígidos como `#!/bin/sh` ou `#!/usr/bin/bash`, garantindo portabilidade entre FreeBSD, Linux e macOS.
+    - Todo script executável de shell neste repositório DEVE iniciar com `#!/usr/bin/env sh`.
+    - Evita caminhos rígidos como `#!/bin/sh` ou `#!/usr/bin/bash`, garantindo portabilidade entre FreeBSD, Linux e macOS.
 5. **Permissões em 4 Dígitos Octais:**
-   - Use sempre a notação de 4 dígitos em comandos `chmod` (`chmod 0755` para diretórios e scripts executáveis públicos, `chmod 0644` para arquivos de configuração e bibliotecas sourced). O zero inicial deixa explícito que bits especiais (_setuid_, _setgid_, _sticky_) estão zerados.
+    - Use sempre a notação de 4 dígitos em comandos `chmod` (`chmod 0755` para diretórios e scripts executáveis públicos, `chmod 0644` para arquivos de configuração e bibliotecas sourced). O zero inicial deixa explícito que bits especiais (_setuid_, _setgid_, _sticky_) estão zerados.
 6. **Linha de Base FreeBSD `/bin/sh` & Adoção Universal de `$'\e...'` e `echo -n`:**
-   - O **FreeBSD `/bin/sh`** é a régua máxima e a linha de base canônica de portabilidade para os scripts compartilhados do projeto. Não nivelamos o projeto por restrições arcaicas ou minimalismo desnecessário.
-   - **Adoção Universal de ANSI-C Quoting (`$''`) e `echo -n`:** O padrão `echo -n $'\e...'` é suportado em todos os shells do nosso ecossistema — FreeBSD `/bin/sh`, Bash, Zsh e até pelo Dash moderno (além de padronizado no POSIX Issue 8). Ele é expressamente o padrão preferido para sequências de controle de tela e atalhos interativos como `clear` (`alias clear="echo -n $'\e[2J\e[3J\e[H'"`), eliminando a necessidade de octal críptico (`\033`) em prol de máxima legibilidade e clareza Clean Code.
-   - **Delimitadores de Largura Zero em Prompts (`\[...\]` e `\e`):** No FreeBSD `/bin/sh` com edição interativa (`set -o emacs`), a biblioteca `libedit` (Editline) gerencia a linha de comando. Toda sequência de escape ANSI inserida no `$PS1` DEVE ser obrigatoriamente delimitada por `\[` e `\]` (`_c_red="\[\e[1;91m\]"`). Sem esses marcadores, a `libedit` contabiliza cada byte de escape como caractere visível de largura 1, quebrando a contagem de colunas físicas e provocando sobreposição de linhas (`\r`) e cursor congelado no início do texto.
-   - **Extensões de Nomenclatura no FreeBSD `/bin/sh` vs `dash`:** O parser em C do `/bin/sh` no FreeBSD suporta hífens em nomes de função (`kebab-case`). Em contraste, interpretadores como o `dash` do Debian/Ubuntu aplicam a restrição estrita da BNF POSIX IEEE 1003.1 (que aceita apenas `[a-zA-Z_][a-zA-Z0-9_]*`, falhando com `Bad function name`). A régua de compatibilidade do projeto é o ecossistema FreeBSD/Bash/Zsh, e não o `dash`.
-   - Scripts que declaram `#!/usr/bin/env sh` devem manter compatibilidade com essa base do FreeBSD `sh` (sem `[[`, sem `function foo()`, sem arrays associativos de bash).
-   - Recursos específicos do Zsh e Bash ficam estritamente em seus respectivos targets (`zsh/`, `bash/`).
+    - O **FreeBSD `/bin/sh`** é a régua máxima e a linha de base canônica de portabilidade para os scripts compartilhados do projeto. Não nivelamos o projeto por restrições arcaicas ou minimalismo desnecessário.
+    - **Adoção Universal de ANSI-C Quoting (`$''`) e `echo -n`:** O padrão `echo -n $'\e...'` é suportado em todos os shells do nosso ecossistema — FreeBSD `/bin/sh`, Bash, Zsh e até pelo Dash moderno (além de padronizado no POSIX Issue 8). Ele é expressamente o padrão preferido para sequências de controle de tela e atalhos interativos como `clear` (`alias clear="echo -n $'\e[2J\e[3J\e[H'"`), eliminando a necessidade de octal críptico (`\033`) em prol de máxima legibilidade e clareza Clean Code.
+    - **Delimitadores de Largura Zero em Prompts (`\[...\]` e `\e`):** No FreeBSD `/bin/sh` com edição interativa (`set -o emacs`), a biblioteca `libedit` (Editline) gerencia a linha de comando. Toda sequência de escape ANSI inserida no `$PS1` DEVE ser obrigatoriamente delimitada por `\[` e `\]` (`_c_red="\[\e[1;91m\]"`). Sem esses marcadores, a `libedit` contabiliza cada byte de escape como caractere visível de largura 1, quebrando a contagem de colunas físicas e provocando sobreposição de linhas (`\r`) e cursor congelado no início do texto.
+    - **Extensões de Nomenclatura no FreeBSD `/bin/sh` vs `dash`:** O parser em C do `/bin/sh` no FreeBSD suporta hífens em nomes de função (`kebab-case`). Em contraste, interpretadores como o `dash` do Debian/Ubuntu aplicam a restrição estrita da BNF POSIX IEEE 1003.1 (que aceita apenas `[a-zA-Z_][a-zA-Z0-9_]*`, falhando com `Bad function name`). A régua de compatibilidade do projeto é o ecossistema FreeBSD/Bash/Zsh, e não o `dash`.
+    - Scripts que declaram `#!/usr/bin/env sh` devem manter compatibilidade com essa base do FreeBSD `sh` (sem `[[`, sem `function foo()`, sem arrays associativos de bash).
+    - Recursos específicos do Zsh e Bash ficam estritamente em seus respectivos targets (`zsh/`, `bash/`).
 7. **Detecção Interativa de Terminal (`[ -t 1 ]`):**
-   - Toda emissão de sequências de escape ANSI (cores, posicionamento ou reset de cursor como `[ -t 1 ] && echo -n $'\e[0 q'`) deve ser estritamente condicionada ao descritor de arquivo 1 (`stdout`) conectado a um terminal interativo (`[ -t 1 ]`).
-   - Evita corromper arquivos ou pipelines quando saídas forem redirecionadas para arquivos de log ou comandos externos (`cmd > file` ou `cmd | grep`).
+    - Toda emissão de sequências de escape ANSI (cores, posicionamento ou reset de cursor como `[ -t 1 ] && echo -n $'\e[0 q'`) deve ser estritamente condicionada ao descritor de arquivo 1 (`stdout`) conectado a um terminal interativo (`[ -t 1 ]`).
+    - Evita corromper arquivos ou pipelines quando saídas forem redirecionadas para arquivos de log ou comandos externos (`cmd > file` ou `cmd | grep`).
 8. **Citações Seguras (Quoting):**
-   - Sempre envolva variáveis em aspas duplas: `"${VAR}"` para evitar _word splitting_ indesejado e ataques de injeção de caminho.
-   - **Aspas Obrigatórias em Redirecionamentos:** SEMPRE use aspas ao redirecionar para o `/dev/null`: `> "/dev/null"` e `2> "/dev/null"` (nunca `> /dev/null` sem aspas).
+    - Sempre envolva variáveis em aspas duplas: `"${VAR}"` para evitar _word splitting_ indesejado e ataques de injeção de caminho.
+    - **Aspas Obrigatórias em Redirecionamentos:** SEMPRE use aspas ao redirecionar para o `/dev/null`: `> "/dev/null"` e `2> "/dev/null"` (nunca `> /dev/null` sem aspas).
 9. **Elevação de Privilégios Agregada (`_as_root` & `doas > sudo`):**
-   - Nunca chame `sudo` diretamente de forma rígida (_hardcoded_) em scripts ou instaladores.
-   - Utilize sempre o helper `_as_root` da `library/functions.sh`, que respeita se a sessão já é `root`, prioriza `doas` (minimalismo e segurança) e faz fallback transparente para `sudo`.
+    - Nunca chame `sudo` diretamente de forma rígida (_hardcoded_) em scripts ou instaladores.
+    - Utilize sempre o helper `_as_root` da `library/functions.sh`, que respeita se a sessão já é `root`, prioriza `doas` (minimalismo e segurança) e faz fallback transparente para `sudo`.
 10. **Respeito a Variáveis Pré-Existentes:**
     - Variáveis de preferências do usuário (como `$EDITOR`, `$VISUAL`, `$FILEMANAGER`) só devem ser atribuídas se estiverem vazias ou não-declaradas, respeitando o arquivo `.profile` e o `Vault` do desenvolvedor.
 11. **Convenção Estrita de Nomenclatura & Sem Funções Gêmeas:**
@@ -184,18 +184,18 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
     - **Código Autoexplicativo (Princípio do Silêncio):** Comentários explicativos inline ("aqui verifica x", "faz loop em y") são **expressamente proibidos**. O código deve expressar sua intenção através de nomes limpos, funções focadas e arquitetura modular.
     - **Único Formato de Comentário Permitido:** O único comentário aceito em arquivos de script e workflows de CI/CD são os **blocos delimitadores visuais estruturais** de dois níveis.
     - **Hierarquia de Dois Níveis:**
-      - **Seção Principal (Módulo / Suíte / Contexto):** Três hashes seguidos de espaço e exatamente 32 sinais de igual (`=`). Título em CAIXA ALTA. Fechamento com régua idêntica à abertura:
-        ```sh
-        ### ================================
-        ### NOME DO MODULO OU CONTEXTO
-        ### ================================
-        ```
-      - **Subseção (Passo / Bloco Lógico):** Três hashes seguidos de espaço e exatamente 32 hífens (`-`). Título em Capital Case. Fechamento com régua idêntica à abertura:
-        ```sh
-        ### --------------------------------
-        ### Nome da Secao
-        ### --------------------------------
-        ```
+        - **Seção Principal (Módulo / Suíte / Contexto):** Três hashes seguidos de espaço e exatamente 32 sinais de igual (`=`). Título em CAIXA ALTA. Fechamento com régua idêntica à abertura:
+            ```sh
+            ### ================================
+            ### NOME DO MODULO OU CONTEXTO
+            ### ================================
+            ```
+        - **Subseção (Passo / Bloco Lógico):** Três hashes seguidos de espaço e exatamente 32 hífens (`-`). Título em Capital Case. Fechamento com régua idêntica à abertura:
+            ```sh
+            ### --------------------------------
+            ### Nome da Secao
+            ### --------------------------------
+            ```
     - **Regra do Não-Vazamento (Boundary Rule):** A linha delimitadora possui exatamente 36 colunas (`### ` + 32 caracteres separadores). O texto do título DEVE ser conciso e **JAMAIS vazar ou ultrapassar** o comprimento da régua delimitadora (máximo de 32 caracteres no texto do título). Títulos que vazam quebram a estética simétrica e violam o padrão de qualidade do repositório.
     - **Sem Parênteses ou Anotações Redundantes:** O título do bloco deve ser conciso e sem anotações secundárias entre parênteses (ex: prefira `### Default Editor` a `### Default Editor (Cascade)` e `### Update Vault` a `### Update Vault (update-vault)`).
     - **Regra da Não-Enumeração de Títulos:** Evite numerar títulos de seções e subseções (ex: prefira `### FreeBSD /bin/sh` a `### 1. FreeBSD /bin/sh`). A enumeração deve ser evitada em geral, sendo tolerada apenas quando a numeração for um requisito estritamente intrínseco à identidade, protocolo ou dependência direta do conceito (onde a omissão do número destruiria o significado do processo). Em qualquer outro caso, use sempre títulos puramente semânticos.
@@ -206,7 +206,7 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 ## 🔒 Princípios de Integração com o Ecossistema
 
 1. **Zero Secrets in Public Repository:**
-   - Este repositório é público. Nunca adicione chaves, senhas, tokens ou dados pessoais em arquivos deste repositório.
+    - Este repositório é público. Nunca adicione chaves, senhas, tokens ou dados pessoais em arquivos deste repositório.
 2. **Contrato de Carregamento com o Vault:**
-   - O Shell lê segredos exclusivamente via integração com `~/.vault/vault.sh`.
-   - Se `~/.vault` existir, ele é integrado de forma transparente e silenciosa. Se não existir, a sessão do terminal continua 100% utilizável sem interrupções.
+    - O Shell lê segredos exclusivamente via integração com `~/.vault/vault.sh`.
+    - Se `~/.vault` existir, ele é integrado de forma transparente e silenciosa. Se não existir, a sessão do terminal continua 100% utilizável sem interrupções.

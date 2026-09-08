@@ -73,17 +73,17 @@ bash "${HOME}/.shell/install.sh" --context desktop
 
 ## ⚡ Comandos Mais Usados
 
-| Comando / Alias | Ação | Destino |
-| :--- | :--- | :--- |
-| `update-all` / `upall` / `u` | **Orquestrador Global:** Atualiza SO + AUR + Flatpak + Snap. | Universal |
-| `update-shell` / `upsh` | Atualiza o repositório do shell (`git pull`) e recarrega a sessão. | Universal |
-| `update-vault` / `upvt` | Sincroniza segredos (`~/.vault`) e recarrega chaves SSH. | Universal |
-| `update-wifi` / `upwf` | Sincroniza credenciais Wi-Fi configuradas com o SO. | Linux, BSD, Windows |
-| `editor [alvo]` / `e` | Abre o editor padrão configurado na cascata de prioridade. | `$VISUAL` / `$EDITOR` |
-| `mount-device` / `mntdev` | Monta celular em `~/Device` via GVfs/KIO-FUSE/GSConnect/ADB. | Desktop |
-| `l`, `ll`, `la`, `lt` | Listagem moderna com ícones e status git (`eza`/`exa`/`ls`). | Universal |
-| `g <termo>` | Busca inteligente de texto em arquivos (`rg` > `grep`). | Universal |
-| `c <arquivo>` | Visualizador formatado com syntax highlighting (`bat` > `cat`). | Universal |
+| Comando / Alias              | Ação                                                               | Destino               |
+| :--------------------------- | :----------------------------------------------------------------- | :-------------------- |
+| `update-all` / `upall` / `u` | **Orquestrador Global:** Atualiza SO + AUR + Flatpak + Snap.       | Universal             |
+| `update-shell` / `upsh`      | Atualiza o repositório do shell (`git pull`) e recarrega a sessão. | Universal             |
+| `update-vault` / `upvt`      | Sincroniza segredos (`~/.vault`) e recarrega chaves SSH.           | Universal             |
+| `update-wifi` / `upwf`       | Sincroniza credenciais Wi-Fi configuradas com o SO.                | Linux, BSD, Windows   |
+| `editor [alvo]` / `e`        | Abre o editor padrão configurado na cascata de prioridade.         | `$VISUAL` / `$EDITOR` |
+| `mount-device` / `mntdev`    | Monta celular em `~/Device` via GVfs/KIO-FUSE/GSConnect/ADB.       | Desktop               |
+| `l`, `ll`, `la`, `lt`        | Listagem moderna com ícones e status git (`eza`/`exa`/`ls`).       | Universal             |
+| `g <termo>`                  | Busca inteligente de texto em arquivos (`rg` > `grep`).            | Universal             |
+| `c <arquivo>`                | Visualizador formatado com syntax highlighting (`bat` > `cat`).    | Universal             |
 
 > 📖 **Consulte o catálogo completo de atalhos e variáveis em [docs/ALIASES.md](docs/ALIASES.md).**
 
@@ -122,3 +122,20 @@ flowchart TD
 - 🎯 **[context/](context/README.md)**: Orquestrador de perfis operacionais (`desktop`, `server`, `container`, `wsl`).
 - 🖌️ **[theme/](theme/README.md)**: Motores de renderização de prompts (Bash, Zsh, Sh).
 - 🎨 **`target/`**: Configurações específicas por sistema operacional (`Linux`, `FreeBSD`, `MacOS`, `Windows`).
+
+---
+
+## 🧪 Quality Gates & Ganchos Git (.githooks)
+
+Para habilitar a validação multi-shell, benchmark de latência e verificação de Markdown antes de cada commit:
+
+```sh
+chmod 0755 .githooks/pre-commit
+git config core.hooksPath .githooks
+```
+
+Para executar o pre-commit hook manualmente:
+
+```sh
+./.githooks/pre-commit
+```

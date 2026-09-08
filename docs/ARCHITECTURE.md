@@ -25,6 +25,7 @@ flowchart TD
 ```
 
 ### Ordem Estrita de Sourcing:
+
 1. **`library/detect.sh`**: Executa sondagens em baixo nível para identificar o sistema hospedeiro sem gerar subprocessos desnecessários.
 2. **`library/functions.sh`**: Exporta helpers universais (`path-front`, `path-back`, `_as_root`, `_is_command`) requeridos por todos os módulos subsequentes.
 3. **`core/environment.sh`**: Define variáveis canônicas, sanitiza o `$PATH`, ativa suporte a TrueColor (24-bit RGB) e configura históricos persistentes.
@@ -44,10 +45,11 @@ A regra máxima do Universal Shell é a **latência imperceptível**. Nenhuma se
 
 ---
 
-## 🤫 A Regra do Silêncio (*Rule of Silence*)
+## 🤫 A Regra do Silêncio (_Rule of Silence_)
 
 Em conformidade com a filosofia UNIX:
-> *"Um programa deve produzir apenas as saídas estritamente necessárias. Silêncio é ouro."*
+
+> _"Um programa deve produzir apenas as saídas estritamente necessárias. Silêncio é ouro."_
 
 - **Zero Banners / Zero Textos:** O terminal não exibe ASCII art, mensagens de boas-vindas, logs de inicialização ou contadores de pacotes ao abrir.
 - **Suporte Perfeito a Ferramentas Remotas:** O silêncio absoluto no boot garante que ferramentas como `scp`, `sftp`, `rsync`, `ansible` e `git` operem sem falhas ou corrupção de fluxo de dados.
@@ -58,6 +60,6 @@ Em conformidade com a filosofia UNIX:
 
 - **Camadas Base (`library/`, `core/`):** Escritas em estrita conformidade com o padrão **POSIX sh**. Devem rodar no `/bin/sh` nativo do FreeBSD sem nenhuma dependência de extensões do GNU Bash.
 - **Prompts Especializados (`theme/`):**
-  - **Bash (`theme/bash.sh`):** Utiliza escape sequences nativas do Bash com suporte a cores 256/TrueColor e status Git.
-  - **Zsh (`theme/zsh.sh`):** Utiliza o subsistema `zstyle`, `vcs_info` e manipulação assíncrona para prompts instantâneos.
-  - **POSIX Sh (`theme/sh.sh`):** Prompt atômico, leve e sem dependências, com total elegância em TTYs puros.
+    - **Bash (`theme/bash.sh`):** Utiliza escape sequences nativas do Bash com suporte a cores 256/TrueColor e status Git.
+    - **Zsh (`theme/zsh.sh`):** Utiliza o subsistema `zstyle`, `vcs_info` e manipulação assíncrona para prompts instantâneos.
+    - **POSIX Sh (`theme/sh.sh`):** Prompt atômico, leve e sem dependências, com total elegância em TTYs puros.

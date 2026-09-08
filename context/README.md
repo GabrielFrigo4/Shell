@@ -16,6 +16,7 @@ Esta pasta gerencia as especializações dinâmicas do **Universal Shell Environ
 ## ⚙️ Contrato de Arquitetura em Duas Camadas
 
 Dentro de cada contexto:
+
 1. **`common.sh`**: Sourced primeiro. Exporta aliases e variáveis genéricas do contexto, independentes do sistema operacional.
 2. **`{OS}.sh`** (ex: `Linux.sh`, `FreeBSD.sh`): Sourced em seguida. Adiciona comandos ou wrappers que utilizam binários exclusivos daquele kernel ou plataforma.
 
