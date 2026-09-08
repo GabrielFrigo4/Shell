@@ -95,21 +95,16 @@ Quando criar uma nova função de abertura de editor ou utilitário interativo:
 Ao concluir qualquer alteração em arquivos `.sh` ou `.md`, execute obrigatoriamente:
 
 ```sh
-# 1. Verificar espaços residuais, tabs misturados e quebras de linha
 git diff --check
 
-# 2. Executar o pre-commit hook oficial
 ./.githooks/pre-commit
 
-# 3. Validar sintaxe na Matriz Multi-Shell:
-# - Bash & Shared Shells:
 find . -name "*.sh" -not -path "./.git/*" -not -path "*/zsh/*" -not -name "zsh.sh" -exec bash -n {} +
-# - Zsh:
+
 find . -name "*.sh" -not -path "./.git/*" -not -path "*/bash/*" -not -name "bash.sh" -exec zsh -n {} +
-# - FreeBSD /bin/sh (executado no FreeBSD nativo ou no runner FreeBSD do CI):
+
 sh -n library/functions.sh && sh -n core/environment.sh && sh -n theme/sh.sh
 
-# 4. Validar permissões octais corretas
 find . -type d -exec chmod 0755 {} +
 find . -type f -exec chmod 0644 {} +
 chmod 0755 install.sh

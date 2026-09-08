@@ -23,33 +23,39 @@ Essas diretrizes são de aplicação obrigatória para qualquer modificação ou
 - **`_snake_case` (privado):** Funções internas de bootstrapping e variáveis locais temporárias (`_as_root`, `_detect_os`, `_pwd`). Mantém o autocompletion limpo.
 - **`SNAKE_CASE` (maiúsculo):** Constantes e variáveis de ambiente globais (`PATH`, `SHELL_REPO_DIR`, `SHELL_CONTEXT`).
 
-## 4. Estrutura de Arquivos, Comentários & Regra do Não-Vazamento
-- **Único Tipo de Comentário Permitido:** O código deve ser autoexplicativo (Princípio do Silêncio). Comentários explicativos inline são expressamente proibidos. Apenas blocos delimitadores estruturais são tolerados.
-- **Cabeçalho de Módulo / Seção Principal (32 `=`):**
-  ```sh
-  ### ================================
-  ### NOME DO MODULO OU CONTEXTO
-  ### ================================
-  ```
-  Arquivos de contexto usam a terminação da plataforma sem parênteses: `COMMON`, `LINUX`, `FREEBSD`, `WINDOWS`.
-- **Subseções Internas (32 `-`):**
-  ```sh
-  ### --------------------------------
-  ### Nome da Secao
-  ### --------------------------------
-  ```
+## 4. Estrutura de Arquivos & Arquitetura de Comentários (Regra do Não-Vazamento)
+- **Zero Comentários Narrativos:** O código deve ser autoexplicativo (Princípio do Silêncio). Comentários explicativos inline são expressamente proibidos em scripts, templates e documentações. Separe blocos lógicos exclusivamente por linhas em branco.
+- **Camada 1 (Header Banner):** Exclusivo para linhas 2 a 4 de scripts utilitários (`install.sh`, etc.), delimitado por 64 hífens (`# ----------------------------------------------------------------`).
+- **Camada 2 (Delimitadores Estruturais de Corpo):**
+  - **Módulo / Seção Principal (32 `=`):**
+    ```sh
+    ### ================================
+    ### NOME DO MODULO OU CONTEXTO
+    ### ================================
+    ```
+    Arquivos de contexto usam a terminação da plataforma sem parênteses: `COMMON`, `LINUX`, `FREEBSD`, `WINDOWS`.
+  - **Subseções Internas (32 `-`):**
+    ```sh
+    ### --------------------------------
+    ### Nome da Secao
+    ### --------------------------------
+    ```
 - **Regra Estrita do Não-Vazamento:** A régua divisora tem exatamente 32 caracteres separadores (total de 36 colunas com `### `). O texto do título DEVE ser conciso e **JAMAIS vazar além da régua** (máximo de 32 caracteres).
 - **Sem Parênteses ou Anotações Redundantes:** O título deve ser limpo e sem anotações secundárias entre parênteses (ex: prefira `### Default Editor` a `### Default Editor (Cascade)` e `### Update Vault` a `### Update Vault (update-vault)`).
-- **Não-Enumeração de Títulos:** Evite numerar títulos de seções (`1. Passo`, `2. Passo`). Numeração só é tolerada se for intrínseca à identidade ou dependência do conceito; caso contrário, use títulos puramente semânticos.
-- **Sem Comentários Ad-Hoc no CI/CD:** Scripts embutidos no CI/CD devem usar esses mesmos blocos, sendo vedado o uso de `echo "=== ... ==="` ou separadores improvisados.
+- **Não-Enumeração de Títulos:** Evite numerar títulos de seções. Use títulos puramente semânticos.
+- **Sem Comentários Ad-Hoc no CI/CD:** Scripts de CI/CD devem usar esses mesmos blocos, sendo vedado o uso de `echo "=== ... ==="` ou separadores improvisados.
 
-## 5. Qualidade de Código & Quoting
+## 5. Padrão Universal de READMEs
+- **README Raiz:** Portal institucional com título e emoji, blockquote de missão, badges do Quarteto de Produtividade, sistemas suportados, catálogo de primeiro nível e instruções de auditoria/CI.
+- **README de Subpastas:** Catálogo tabular obrigatório (`| Arquivo / Receita | Descrição | Plataforma |`) e bloco de execução limpo sem comentários inline.
+
+## 6. Qualidade de Código & Quoting
 - Redirecionamentos para `/dev/null` sempre devem ser protegidos por aspas: `> "/dev/null"` e `2> "/dev/null"`.
 - Variáveis sempre entre aspas duplas: `"${VAR}"`.
 - Scripts executáveis devem usar shebang `#!/usr/bin/env sh`.
 - Comandos `chmod` usam 4 dígitos octais: `chmod 0755` e `chmod 0644`.
 
-## 6. Checklist de Validação
+## 7. Checklist de Validação
 Antes de finalizar qualquer alteração:
 1. `git diff --check` (deve retornar 0 erros).
 2. `./.githooks/pre-commit` (deve passar 100%).

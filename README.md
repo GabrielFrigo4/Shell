@@ -58,24 +58,14 @@ O instalador aceita a flag `--context` (`desktop`, `server`, `container`, `wsl`)
 ### 🐧 Linux / 😈 FreeBSD / 🍎 macOS
 
 ```sh
-# 1. Clone no diretório compartilhado do sistema
-doas git clone "https://github.com/GabrielFrigo4/shell" "/usr/local/share/shell"
-# ou
 sudo git clone "https://github.com/GabrielFrigo4/shell" "/usr/local/share/shell"
-
-# 2. Execute o instalador para o seu shell preferido
 bash "/usr/local/share/shell/install.sh" --context desktop
-# ou
-zsh "/usr/local/share/shell/install.sh" --context desktop
 ```
 
 ### 🪟 Windows (MSYS2)
 
 ```sh
-# 1. Clone no diretório de usuário
 git clone "https://github.com/GabrielFrigo4/shell" "${HOME}/.shell"
-
-# 2. Execute a instalação
 bash "${HOME}/.shell/install.sh" --context desktop
 ```
 
