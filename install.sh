@@ -9,10 +9,16 @@ SHELL_REPO_DIR="$(cd "$(dirname "${0}")" && pwd)"
 ### Parse Arguments
 ### --------------------------------
 SHELL_CONTEXT="${SHELL_CONTEXT:-desktop}"
+SHELL_TARGET="${SHELL_TARGET:-all}"
+SHELL_PURE=0
+
 for arg in "$@"; do
 	case "${arg}" in
 		--context=*) SHELL_CONTEXT="${arg#*=}" ;;
 		-c=*)        SHELL_CONTEXT="${arg#*=}" ;;
+		--shell=*)   SHELL_TARGET="${arg#*=}" ;;
+		-s=*)        SHELL_TARGET="${arg#*=}" ;;
+		--pure|--no-framework) SHELL_PURE=1 ;;
 	esac
 done
 
@@ -23,8 +29,14 @@ for arg in "$@"; do
 		_skip_next=0
 		continue
 	fi
+	if [ "${_skip_next}" -eq 2 ]; then
+		SHELL_TARGET="${arg}"
+		_skip_next=0
+		continue
+	fi
 	case "${arg}" in
 		--context|-c) _skip_next=1 ;;
+		--shell|-s)   _skip_next=2 ;;
 	esac
 done
 unset _skip_next
@@ -33,7 +45,16 @@ case "${SHELL_CONTEXT}" in
 	desktop|server|container|wsl) ;;
 	*)
 		echo "ERROR: Invalid context '${SHELL_CONTEXT}'. Use 'desktop', 'server', 'container' or 'wsl'."
-		echo "Usage: install.sh [--context desktop|server|container|wsl] [-c desktop|server|container|wsl]"
+		echo "Usage: install.sh [--context desktop|server|container|wsl] [-c ...] [--shell all|bash|zsh|sh] [-s ...] [--pure|--no-framework]"
+		exit 1
+		;;
+esac
+
+case "${SHELL_TARGET}" in
+	all|bash|zsh|sh) ;;
+	*)
+		echo "ERROR: Invalid shell '${SHELL_TARGET}'. Use 'all', 'bash', 'zsh' or 'sh'."
+		echo "Usage: install.sh [--context desktop|server|container|wsl] [-c ...] [--shell all|bash|zsh|sh] [-s ...] [--pure|--no-framework]"
 		exit 1
 		;;
 esac
@@ -46,11 +67,51 @@ esac
 OS_NAME="$(_detect_os)"
 SHELL_NAME="$(_detect_shell)"
 
+### --------------------------------
+### Determine Target Shells
+### --------------------------------
+if [ "${SHELL_TARGET}" != "all" ]; then
+	TARGET_SHELLS="${SHELL_TARGET}"
+else
+	TARGET_SHELLS=""
+	case "${OS_NAME}" in
+		linux)
+			command -v bash > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} bash"
+			command -v zsh > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} zsh"
+			;;
+		freebsd)
+			TARGET_SHELLS="${TARGET_SHELLS} sh"
+			command -v bash > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} bash"
+			command -v zsh > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} zsh"
+			;;
+		macos)
+			command -v zsh > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} zsh"
+			command -v bash > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} bash"
+			;;
+		windows)
+			command -v bash > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} bash"
+			command -v zsh > "/dev/null" 2>&1 && TARGET_SHELLS="${TARGET_SHELLS} zsh"
+			;;
+		*)
+			TARGET_SHELLS="${SHELL_NAME}"
+			;;
+	esac
+
+	if [ -z "${TARGET_SHELLS}" ]; then
+		TARGET_SHELLS="${SHELL_NAME}"
+	fi
+	TARGET_SHELLS="$(echo "${TARGET_SHELLS}" | sed 's/^[ ]*//')"
+fi
+
 echo "=== Shell Installer ==="
-echo "Detected repo:  ${SHELL_REPO_DIR}"
-echo "Detected OS:    ${OS_NAME}"
-echo "Detected shell: ${SHELL_NAME}"
-echo "Context:        ${SHELL_CONTEXT}"
+echo "Detected repo:   ${SHELL_REPO_DIR}"
+echo "Detected OS:     ${OS_NAME}"
+echo "Current shell:   ${SHELL_NAME}"
+echo "Target shell(s): ${TARGET_SHELLS}"
+echo "Context:         ${SHELL_CONTEXT}"
+if [ "${SHELL_PURE}" -eq 1 ]; then
+	echo "Mode:            pure (no frameworks)"
+fi
 
 ### --------------------------------
 ### Repository Permissions
@@ -68,139 +129,155 @@ if [ -d "${SHELL_REPO_DIR}/.git" ] && command -v git > "/dev/null" 2>&1; then
 fi
 
 ### --------------------------------
-### Validate
+### Target Shell Installer
 ### --------------------------------
-PROMPT_FILE="${SHELL_REPO_DIR}/target/${OS_NAME}/${SHELL_NAME}/prompt.sh"
-if [ ! -f "${PROMPT_FILE}" ]; then
-	echo "ERROR: No prompt file found at: ${PROMPT_FILE}"
-	echo "Available configs:"
-	ls -R "${SHELL_REPO_DIR}/target/" 2> "/dev/null"
-	exit 1
-fi
+_install_shell_target() {
+	local _target_shell="${1}"
+	local _prompt_file="${SHELL_REPO_DIR}/target/${OS_NAME}/${_target_shell}/prompt.sh"
 
-echo "Found prompt:   ${PROMPT_FILE}"
+	if [ ! -f "${_prompt_file}" ]; then
+		echo "⚠️  No prompt file found for ${_target_shell} at: ${_prompt_file}"
+		echo "   Skipping ${_target_shell}."
+		return 0
+	fi
 
-### --------------------------------
-### User RC Configuration
-### --------------------------------
-case "${SHELL_NAME}" in
-	bash) RC_FILE="${HOME}/.bashrc" ;;
-	zsh)  RC_FILE="${HOME}/.zshrc" ;;
-	sh)   RC_FILE="${HOME}/.shrc" ;;
-	dash) RC_FILE="${HOME}/.dashrc" ;;
-	*)    RC_FILE="${HOME}/.${SHELL_NAME}rc" ;;
-esac
+	local _rc_file
+	local _root_rc_file
+	case "${_target_shell}" in
+		bash) _rc_file="${HOME}/.bashrc"; _root_rc_file="/root/.bashrc" ;;
+		zsh)  _rc_file="${HOME}/.zshrc";  _root_rc_file="/root/.zshrc" ;;
+		sh)   _rc_file="${HOME}/.shrc";   _root_rc_file="/root/.shrc" ;;
+		dash) _rc_file="${HOME}/.dashrc"; _root_rc_file="/root/.dashrc" ;;
+		*)    _rc_file="${HOME}/.${_target_shell}rc"; _root_rc_file="/root/.${_target_shell}rc" ;;
+	esac
 
-### --------------------------------
-### Root RC Configuration
-### --------------------------------
-case "${SHELL_NAME}" in
-	bash) ROOT_RC_FILE="/root/.bashrc" ;;
-	zsh)  ROOT_RC_FILE="/root/.zshrc" ;;
-	sh)   ROOT_RC_FILE="/root/.shrc" ;;
-	dash) ROOT_RC_FILE="/root/.dashrc" ;;
-	*)    ROOT_RC_FILE="/root/.${SHELL_NAME}rc" ;;
-esac
+	rm -f "${_rc_file}"
+	if [ "${OS_NAME}" != "windows" ]; then
+		_as_root rm -f "${_root_rc_file}"
+	fi
 
-### --------------------------------
-### Clean User RC File
-### --------------------------------
-rm -f "${RC_FILE}"
+	if [ "${SHELL_PURE}" -eq 0 ]; then
+		case "${_target_shell}" in
+			zsh)
+				if command -v zsh > "/dev/null" 2>&1; then
+					if [ ! -d "${HOME}/.oh-my-zsh" ]; then
+						KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended
+					else
+						cp "${HOME}/.oh-my-zsh/templates/zshrc.zsh-template" "${_rc_file}"
+					fi
+					if [ -f "${_rc_file}" ]; then
+						sed -i.bak "s/^# zstyle ':omz:update' mode disabled/zstyle ':omz:update' mode disabled/" "${_rc_file}" && rm -f "${_rc_file}.bak"
+						if ! grep -qF 'ZSH_DISABLE_COMPFIX' "${_rc_file}" 2> "/dev/null"; then
+							sed -i.bak '/^export ZSH=/i ZSH_DISABLE_COMPFIX="true"' "${_rc_file}" && rm -f "${_rc_file}.bak"
+						fi
+					fi
+					[ -f "${HOME}/.zcompdump" ] && zsh -c 'zcompile "${HOME}/.zcompdump"' 2> "/dev/null" || true
+					if [ "${OS_NAME}" != "windows" ]; then
+						if ! _as_root test -d "/root/.oh-my-zsh"; then
+							_as_root env KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended'
+						else
+							_as_root cp "/root/.oh-my-zsh/templates/zshrc.zsh-template" "${_root_rc_file}"
+						fi
+						if _as_root test -f "${_root_rc_file}"; then
+							_as_root sed -i.bak "s/^# zstyle ':omz:update' mode disabled/zstyle ':omz:update' mode disabled/" "${_root_rc_file}" && _as_root rm -f "${_root_rc_file}.bak"
+							if ! _as_root grep -qF 'ZSH_DISABLE_COMPFIX' "${_root_rc_file}" 2> "/dev/null"; then
+								_as_root sed -i.bak '/^export ZSH=/i ZSH_DISABLE_COMPFIX="true"' "${_root_rc_file}" && _as_root rm -f "${_root_rc_file}.bak"
+							fi
+						fi
+					fi
+				fi
+				;;
+			bash)
+				if command -v bash > "/dev/null" 2>&1; then
+					if [ ! -d "${HOME}/.oh-my-bash" ]; then
+						KEEP_BASHRC=no curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended
+					else
+						cp "${HOME}/.oh-my-bash/templates/bashrc.osh-template" "${_rc_file}"
+					fi
+					if [ -f "${_rc_file}" ]; then
+						sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "${_rc_file}" && rm -f "${_rc_file}.bak"
+						sed -i.bak 's/^# DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "${_rc_file}" && rm -f "${_rc_file}.bak"
+						awk '
+							/^completions=\(/ { print "completions=(git ssh)"; skip=1; next }
+							/^aliases=\(/     { print "aliases=(general)"; skip=1; next }
+							/^plugins=\(/     { print "plugins=(bashmarks)"; skip=1; next }
+							skip && /^\)/     { skip=0; next }
+							!skip             { print }
+						' "${_rc_file}" > "${_rc_file}.tmp" && mv -f "${_rc_file}.tmp" "${_rc_file}"
+					fi
+					if [ "${OS_NAME}" != "windows" ]; then
+						if ! _as_root test -d "/root/.oh-my-bash"; then
+							_as_root env KEEP_BASHRC=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended'
+						else
+							_as_root cp "/root/.oh-my-bash/templates/bashrc.osh-template" "${_root_rc_file}"
+						fi
+						if _as_root test -f "${_root_rc_file}"; then
+							_as_root sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "${_root_rc_file}" && _as_root rm -f "${_root_rc_file}.bak"
+							_as_root sed -i.bak 's/^# DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "${_root_rc_file}" && _as_root rm -f "${_root_rc_file}.bak"
+							_as_root sh -c 'awk '\''
+								/^completions=\(/ { print "completions=(git ssh)"; skip=1; next }
+								/^aliases=\(/     { print "aliases=(general)"; skip=1; next }
+								/^plugins=\(/     { print "plugins=(bashmarks)"; skip=1; next }
+								skip && /^\)/     { skip=0; next }
+								!skip             { print }
+							'\'' "$1" > "$1.tmp" && mv -f "$1.tmp" "$1"' _ "${_root_rc_file}"
+						fi
+					fi
+				fi
+				;;
+		esac
+	fi
 
-### --------------------------------
-### Clean Root RC File
-### --------------------------------
-if [ "${OS_NAME}" != "windows" ]; then
-	_as_root rm -f "${ROOT_RC_FILE}"
-fi
-
-### --------------------------------
-### Install Oh-My-Zsh / Oh-My-Bash
-### --------------------------------
-case "${SHELL_NAME}" in
-	zsh)
-		if [ ! -d "${HOME}/.oh-my-zsh" ]; then
-			KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended
-		else
-			cp "${HOME}/.oh-my-zsh/templates/zshrc.zsh-template" "${HOME}/.zshrc"
-		fi
-		sed -i.bak "s/^# zstyle ':omz:update' mode disabled/zstyle ':omz:update' mode disabled/" "${HOME}/.zshrc" && rm -f "${HOME}/.zshrc.bak"
-		if [ "${OS_NAME}" != "windows" ]; then
-			if [ ! -d "/root/.oh-my-zsh" ]; then
-				_as_root env KEEP_ZSHRC=no OVERWRITE_CONFIRMATION=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" | zsh -s -- --unattended'
-			else
-				_as_root cp "/root/.oh-my-zsh/templates/zshrc.zsh-template" "/root/.zshrc"
-			fi
-			_as_root sed -i.bak "s/^# zstyle ':omz:update' mode disabled/zstyle ':omz:update' mode disabled/" "/root/.zshrc" && _as_root rm -f "/root/.zshrc.bak"
-		fi
-		;;
-	bash)
-		if [ ! -d "${HOME}/.oh-my-bash" ]; then
-			KEEP_BASHRC=no curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended
-		else
-			cp "${HOME}/.oh-my-bash/templates/bashrc.osh-template" "${HOME}/.bashrc"
-		fi
-		sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "${HOME}/.bashrc" && rm -f "${HOME}/.bashrc.bak"
-		sed -i.bak 's/^# DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "${HOME}/.bashrc" && rm -f "${HOME}/.bashrc.bak"
-		if [ "${OS_NAME}" != "windows" ]; then
-			if [ ! -d "/root/.oh-my-bash" ]; then
-				_as_root env KEEP_BASHRC=no sh -c 'curl -fsSL "https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh" | bash -s -- --unattended'
-			else
-				_as_root cp "/root/.oh-my-bash/templates/bashrc.osh-template" "/root/.bashrc"
-			fi
-			_as_root sed -i.bak 's/OSH_THEME="[^"]*"/OSH_THEME=""/' "/root/.bashrc" && _as_root rm -f "/root/.bashrc.bak"
-			_as_root sed -i.bak 's/^# DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "/root/.bashrc" && _as_root rm -f "/root/.bashrc.bak"
-		fi
-		;;
-esac
-
-### --------------------------------
-### Source lines to inject
-### --------------------------------
-SOURCE_CMD="."
-
-REPO_DIR_LINE="export SHELL_REPO_DIR=\"${SHELL_REPO_DIR}\""
-CONTEXT_LINE="export SHELL_CONTEXT=\"${SHELL_CONTEXT}\""
-SOURCE_LINE="${SOURCE_CMD} \"\${SHELL_REPO_DIR}/target/${OS_NAME}/${SHELL_NAME}/prompt.sh\""
-SETUP_BLOCK="$(cat << EOF
+	local _source_cmd="."
+	local _repo_dir_line="export SHELL_REPO_DIR=\"${SHELL_REPO_DIR}\""
+	local _context_line="export SHELL_CONTEXT=\"${SHELL_CONTEXT}\""
+	local _source_line="${_source_cmd} \"\${SHELL_REPO_DIR}/target/${OS_NAME}/${_target_shell}/prompt.sh\""
+	local _setup_block="$(cat << EOF
 
 ### ================================
 ### Shell Environment Setup
 ### ================================
-${REPO_DIR_LINE}
-${CONTEXT_LINE}
+${_repo_dir_line}
+${_context_line}
 
-for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${SOURCE_CMD} "\${_f}"; done
-for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${SOURCE_CMD} "\${_f}"; done
+for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
 unset _f
 
-${SOURCE_LINE}
+${_source_line}
 EOF
 )"
 
-### --------------------------------
-### User Installation
-### --------------------------------
-echo "Target RC file: ${RC_FILE}"
-if grep -qF "${SOURCE_LINE}" "${RC_FILE}" 2> "/dev/null"; then
-	echo "Shell config already installed in ${RC_FILE}"
-	echo "Skipping."
-else
-	echo "${SETUP_BLOCK}" | tee -a "${RC_FILE}" > "/dev/null"
-	echo "Done! Added source lines to ${RC_FILE}"
-	echo "Restart your shell or run: . ${RC_FILE}"
-fi
-
-### --------------------------------
-### Root Installation
-### --------------------------------
-if [ "${OS_NAME}" != "windows" ]; then
-	echo "Target RC file: ${ROOT_RC_FILE} (root)"
-	if _as_root grep -qF "${SOURCE_LINE}" "${ROOT_RC_FILE}" 2> "/dev/null"; then
-		echo "Shell config already installed in ${ROOT_RC_FILE}"
+	echo "Target RC file: ${_rc_file}"
+	if grep -qF "${_source_line}" "${_rc_file}" 2> "/dev/null"; then
+		echo "Shell config already installed in ${_rc_file}"
 		echo "Skipping."
 	else
-		echo "${SETUP_BLOCK}" | _as_root tee -a "${ROOT_RC_FILE}" > "/dev/null"
-		echo "Done! Added source lines to ${ROOT_RC_FILE}"
+		echo "${_setup_block}" | tee -a "${_rc_file}" > "/dev/null"
+		echo "Done! Added source lines to ${_rc_file}"
 	fi
-fi
+
+	if [ "${OS_NAME}" != "windows" ]; then
+		echo "Target RC file: ${_root_rc_file} (root)"
+		if _as_root grep -qF "${_source_line}" "${_root_rc_file}" 2> "/dev/null"; then
+			echo "Shell config already installed in ${_root_rc_file}"
+			echo "Skipping."
+		else
+			echo "${_setup_block}" | _as_root tee -a "${_root_rc_file}" > "/dev/null"
+			echo "Done! Added source lines to ${_root_rc_file}"
+		fi
+	fi
+}
+
+### --------------------------------
+### Execute Installation
+### --------------------------------
+for _target in ${TARGET_SHELLS}; do
+	echo ""
+	echo "🔧 Configuring for shell: ${_target}"
+	_install_shell_target "${_target}"
+done
+
+echo ""
+echo "✨ Installation finished for target shells: ${TARGET_SHELLS}"
+echo "Restart your terminal or reload your shell profile."

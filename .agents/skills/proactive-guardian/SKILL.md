@@ -60,6 +60,12 @@ Sempre que ler, editar ou inspecionar qualquer script `.sh`, valide silenciosame
 - [ ] **Não-Enumeração Arbitrária:** Títulos de seções não devem ser numerados (evitar '1.', '2.'), a menos que a ordem numérica seja intrínseca à identidade do conceito.
 - [ ] **Sem Separadores Ad-Hoc:** Eliminar `echo "=== ... ==="` em scripts de CI/CD ou instaladores, convertendo-os para o padrão estrutural limpo.
 
+### F. Programação Defensiva (Duas Zonas)
+
+- [ ] **Zone A (Boot-Time):** `command -v` no top-level APENAS para variáveis de ambiente, aliases de compatibilidade bidirecional e cascatas canônicas. Nunca para habilitar/desabilitar funções operacionais.
+- [ ] **Zone B (Runtime):** Funções operacionais do usuário (editores, utilitários, package managers) DEVEM ser definidas incondicionalmente. A validação `command -v` DEVE ocorrer dentro da função, na primeira invocação.
+- [ ] **Padrão de Erro:** Funções Zone B que falharem na validação devem emitir mensagem no `stderr` (`>&2`) e retornar código `127` (command not found padrão POSIX).
+
 ---
 
 ## 3. Fluxo de Entrega com Qualidade

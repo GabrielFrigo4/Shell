@@ -273,73 +273,66 @@ update-network() {
 ### --------------------------------
 ### Package Managers
 ### --------------------------------
-if command -v pacman > "/dev/null" 2>&1; then
-	update-pacman() {
-		if [ "$(_detect_os)" = "windows" ]; then
-			command pacman --noconfirm -Syu "$@"
-		else
-			_as_root pacman --noconfirm -Syu "$@"
-		fi
-	}
-fi
+update-pacman() {
+	command -v pacman > "/dev/null" 2>&1 || { echo "❌ pacman not found." >&2; return 127; }
+	if [ "$(_detect_os)" = "windows" ]; then
+		command pacman --noconfirm -Syu "$@"
+	else
+		_as_root pacman --noconfirm -Syu "$@"
+	fi
+}
 
-if command -v apt > "/dev/null" 2>&1; then
-	update-apt() {
-		_as_root apt update && _as_root apt upgrade --yes "$@"
-	}
-fi
+update-apt() {
+	command -v apt > "/dev/null" 2>&1 || { echo "❌ apt not found." >&2; return 127; }
+	_as_root apt update && _as_root apt upgrade --yes "$@"
+}
 
-if command -v dnf > "/dev/null" 2>&1; then
-	update-dnf() {
-		_as_root dnf upgrade --assumeyes "$@"
-	}
-fi
+update-dnf() {
+	command -v dnf > "/dev/null" 2>&1 || { echo "❌ dnf not found." >&2; return 127; }
+	_as_root dnf upgrade --assumeyes "$@"
+}
 
-if command -v zypper > "/dev/null" 2>&1; then
-	update-zypper() {
-		_as_root zypper --non-interactive update "$@"
-	}
-fi
+update-zypper() {
+	command -v zypper > "/dev/null" 2>&1 || { echo "❌ zypper not found." >&2; return 127; }
+	_as_root zypper --non-interactive update "$@"
+}
 
-if command -v xbps-install > "/dev/null" 2>&1; then
-	update-xbps() {
-		_as_root xbps-install --yes -Su "$@"
-	}
-fi
+update-xbps() {
+	command -v xbps-install > "/dev/null" 2>&1 || { echo "❌ xbps-install not found." >&2; return 127; }
+	_as_root xbps-install --yes -Su "$@"
+}
 
-if command -v apk > "/dev/null" 2>&1; then
-	update-apk() {
-		_as_root apk update && _as_root apk upgrade "$@"
-	}
-fi
+update-apk() {
+	command -v apk > "/dev/null" 2>&1 || { echo "❌ apk not found." >&2; return 127; }
+	_as_root apk update && _as_root apk upgrade "$@"
+}
 
-if command -v pkg > "/dev/null" 2>&1; then
-	update-pkg() {
-		_as_root pkg update && _as_root pkg upgrade --yes "$@"
-	}
-fi
+update-pkg() {
+	command -v pkg > "/dev/null" 2>&1 || { echo "❌ pkg not found." >&2; return 127; }
+	_as_root pkg update && _as_root pkg upgrade --yes "$@"
+}
 
-if command -v paru > "/dev/null" 2>&1 || command -v yay > "/dev/null" 2>&1; then
-	update-aur() {
-		if command -v paru > "/dev/null" 2>&1; then
-			command paru --noconfirm -Syu "$@"
-		elif command -v yay > "/dev/null" 2>&1; then
-			command yay --noconfirm -Syu "$@"
-		fi
-	}
-fi
+update-aur() {
+	if command -v paru > "/dev/null" 2>&1; then
+		command paru --noconfirm -Syu "$@"
+	elif command -v yay > "/dev/null" 2>&1; then
+		command yay --noconfirm -Syu "$@"
+	else
+		echo "❌ Neither 'paru' nor 'yay' found." >&2
+		return 127
+	fi
+}
 
-if command -v flatpak > "/dev/null" 2>&1; then
-	update-flatpak() {
-		command flatpak update --assumeyes "$@"
-	}
-fi
+update-flatpak() {
+	command -v flatpak > "/dev/null" 2>&1 || { echo "❌ flatpak not found." >&2; return 127; }
+	command flatpak update --assumeyes "$@"
+}
 
-if command -v snap > "/dev/null" 2>&1; then
-	update-snap() {
-		_as_root snap refresh "$@"
-	}
-fi
+update-snap() {
+	command -v snap > "/dev/null" 2>&1 || { echo "❌ snap not found." >&2; return 127; }
+	_as_root snap refresh "$@"
+}
+
 
 ### --------------------------------
 ### Update System

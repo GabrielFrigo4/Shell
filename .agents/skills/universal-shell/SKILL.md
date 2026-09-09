@@ -33,10 +33,21 @@ Antes de escrever qualquer código, posicione-o na camada correta do ciclo de vi
     - O formato `echo -n $'\e...'` é universalmente suportado em todo o ecossistema (FreeBSD `/bin/sh`, Zsh, Bash e Dash moderno, além do padrão POSIX Issue 8).
     - Use expressamente `echo -n $'\e...'` para sequências de controle de terminal (ex: `alias clear="echo -n $'\e[2J\e[3J\e[H'"`), priorizando a clareza e legibilidade do `$'\e'` sobre o octal arcaico.
 
-2. **Programação Defensiva (`command -v`):**
-    - Nunca defina aliases ou funções de binários externos sem validação prévia:
+2. **Programação Defensiva em Duas Zonas (`command -v`):**
+    - **Zone A (Boot-Time):** Use `command -v` no nível top-level APENAS para:
+        - Exportar variáveis de ambiente (`GTK_THEME`, `EDITOR`, etc.).
+        - Definir aliases de compatibilidade bidirecional (`doas` ↔ `sudo`, `paru` ↔ `yay`).
+        - Cascatas canônicas de ferramentas (`eza` > `exa` > `ls`).
+    - **Zone B (Runtime — Lazy Evaluation):** Para comandos operacionais do usuário (editores, utilitários, package managers), defina funções incondicionalmente e valide o binário na primeira invocação:
         ```sh
-        command -v <binario> > "/dev/null" 2>&1 && alias <alias>="<binario>"
+        open-editor() {
+            command -v editor > "/dev/null" 2>&1 || { echo "❌ editor not found." >&2; return 127; }
+            if [ "$#" -eq 0 ]; then
+                command editor .
+            else
+                command editor "$@"
+            fi
+        }
         ```
 
 3. **Proteção de Terminal (`[ -t 1 ]`):**

@@ -25,6 +25,8 @@
 ![Bash](https://img.shields.io/badge/📜_bash-100%25-green)
 ![Zsh](https://img.shields.io/badge/⚡_zsh-100%25-blue)
 ![Sh](https://img.shields.io/badge/⚙️_sh-100%25-red)
+![Dash](https://img.shields.io/badge/💨_dash-Incompatível_POSIX-lightgrey)
+![Fish](https://img.shields.io/badge/🐟_fish-Incompatível_POSIX-lightgrey)
 [![CI](https://github.com/GabrielFrigo4/shell/actions/workflows/ci.yml/badge.svg)](https://github.com/GabrielFrigo4/shell/actions/workflows/ci.yml)
 
 ```mermaid
@@ -49,42 +51,77 @@ flowchart LR
     MAC --> DSK
 ```
 
+#### 🐚 Matriz de Suporte a Shells
+
+| Shell             |    Status     | Detalhes & Decisão de Arquitetura                                                                         |
+| :---------------- | :-----------: | :-------------------------------------------------------------------------------------------------------- |
+| **Bash (`bash`)** |    🟢 100%    | Suporte universal nativo em Linux, macOS, BSD e Windows. Template Oh-My-Bash otimizado.                   |
+| **Zsh (`zsh`)**   |    🟢 100%    | Shell primário interativo moderno. Template Oh-My-Zsh com `zcompile` e `ZSH_DISABLE_COMPFIX`.             |
+| **Sh (`sh`)**     |    🟢 100%    | Shell POSIX leve e fundamental (FreeBSD `/bin/sh`). Prompt puro sem overhead de frameworks.               |
+| **Dash (`dash`)** | ❌ Descartado | **Incompatibilidade POSIX:** BNF estrita proíbe nomes `kebab-case` (`-`) em funções (`update-all`, etc.). |
+| **Fish (`fish`)** | ❌ Descartado | **Incompatibilidade POSIX:** Sintaxe própria incompatível com `source` em arquivos `.sh` e `export`.      |
+
 ---
 
 ## 🚀 Instalação Rápida
 
-O instalador aceita a flag `--context` (`desktop`, `server`, `container`, `wsl`). Se omitido, assume `desktop`.
+O instalador é **multi-shell automático**: ao ser executado, ele detecta os shells suportados instalados na máquina e configura todos eles em lote:
+
+- **Linux:** configura automaticamente `bash` e `zsh` (caso instalados).
+- **FreeBSD:** configura automaticamente `sh`, `bash` e `zsh` (caso instalados).
+- **macOS:** configura automaticamente `zsh` e `bash` (caso instalados).
+- **Windows (MSYS2):** configura `bash` e `zsh` (caso instalados).
+
+> 💡 **Novo shell instalado depois?** Se você instalar um novo shell posteriormente (ex: `sudo pacman -S zsh` ou `pkg install zsh`), basta executar `reinstall-shell` (ou reexecutar o `install.sh`) e ele configurará o novo shell automaticamente!
 
 ### 🐧 Linux / 😈 FreeBSD / 🍎 macOS
 
 ```sh
 sudo git clone "https://github.com/GabrielFrigo4/shell" "/usr/local/share/shell"
-bash "/usr/local/share/shell/install.sh" --context desktop
+sh "/usr/local/share/shell/install.sh" --context desktop
 ```
 
 ### 🪟 Windows (MSYS2)
 
 ```sh
 git clone "https://github.com/GabrielFrigo4/shell" "${HOME}/.shell"
-bash "${HOME}/.shell/install.sh" --context desktop
+sh "${HOME}/.shell/install.sh" --context desktop
 ```
+
+### ⚙️ Opções do Instalador
+
+| Opção       |      Atalho      | Valores                                 |   Padrão   | Descrição                                                           |
+| :---------- | :--------------: | :-------------------------------------- | :--------: | :------------------------------------------------------------------ |
+| `--context` |       `-c`       | `desktop`, `server`, `container`, `wsl` | `desktop`  | Perfil de contexto do ambiente.                                     |
+| `--shell`   |       `-s`       | `all`, `bash`, `zsh`, `sh`              |   `all`    | Instala em todos os shells instalados ou em um alvo específico.     |
+| `--pure`    | `--no-framework` | Flag booleana                           | Desativado | Instalação pura (sem frameworks Oh-My-\*, boot ultrarrápido <20ms). |
 
 ---
 
 ## ⚡ Comandos Mais Usados
 
-| Comando / Alias              | Ação                                                               | Destino               |
-| :--------------------------- | :----------------------------------------------------------------- | :-------------------- |
-| `update-all` / `upall` / `u` | **Orquestrador Global:** Atualiza SO + AUR + Flatpak + Snap.       | Universal             |
-| `update-shell` / `upsh`      | Atualiza o repositório do shell (`git pull`) e recarrega a sessão. | Universal             |
-| `update-vault` / `upvt`      | Sincroniza segredos (`~/.vault`) e recarrega chaves SSH.           | Universal             |
-| `bench-shell` / `bsh`        | Mede a latência de inicialização dos shells e módulos isolados.    | Universal             |
-| `update-wifi` / `upwf`       | Sincroniza credenciais Wi-Fi configuradas com o SO.                | Linux, BSD, Windows   |
-| `editor [alvo]` / `e`        | Abre o editor padrão configurado na cascata de prioridade.         | `$VISUAL` / `$EDITOR` |
-| `mount-device` / `mntdev`    | Monta celular em `~/Device` via GVfs/KIO-FUSE/GSConnect/ADB.       | Desktop               |
-| `l`, `ll`, `la`, `lt`        | Listagem moderna com ícones e status git (`eza`/`exa`/`ls`).       | Universal             |
-| `g <termo>`                  | Busca inteligente de texto em arquivos (`rg` > `grep`).            | Universal             |
-| `c <arquivo>`                | Visualizador formatado com syntax highlighting (`bat` > `cat`).    | Universal             |
+| Comando / Alias                       | Ação                                                                   | Destino               |
+| :------------------------------------ | :--------------------------------------------------------------------- | :-------------------- |
+| `update-all` / `upall` / `u`          | **Orquestrador Global:** Atualiza SO + AUR + Flatpak + Snap.           | Universal             |
+| `update-system` / `upsys`             | Atualiza pacotes do sistema operacional nativo.                        | Universal             |
+| `update-shell` / `upsh`               | Atualiza o repositório do shell (`git pull`) e recarrega a sessão.     | Universal             |
+| `reinstall-shell` / `resh`            | Reexecuta o instalador em todos os shells instalados no SO.            | Universal             |
+| `update-vault` / `upvt`               | Sincroniza segredos (`~/.vault`) e recarrega chaves SSH.               | Universal             |
+| `bench-shell` / `bsh` / `shell-bench` | Mede a latência de inicialização dos shells e módulos isolados.        | Universal             |
+| `update-wifi` / `upwf`                | Sincroniza credenciais Wi-Fi configuradas com o SO.                    | Linux, BSD, Windows   |
+| `update-network` / `upnet`            | Valida conectividade e sincroniza credenciais de rede.                 | Universal             |
+| `editor [alvo]` / `e`                 | Abre o editor padrão configurado na cascata de prioridade.             | `$VISUAL` / `$EDITOR` |
+| `open-neovim` / `on`                  | Abre o Neovim no alvo especificado (padrão: `.`).                      | `nvim`                |
+| `open-helix` / `oh` / `h`             | Abre o Helix no alvo especificado (padrão: `.`).                       | `hx`                  |
+| `open-code` / `oc`                    | Abre o VS Code no alvo especificado (padrão: `.`).                     | `code` / `vscode`     |
+| `mount-device` / `mntdev` / `mdev`    | Monta celular em `~/Device` via GVfs/KIO-FUSE/GSConnect/ADB.           | Desktop               |
+| `umount-device` / `umdev` / `udev`    | Desmonta e desconecta `~/Device` com segurança.                        | Desktop               |
+| `ports` / `p`                         | Inspeciona portas de rede em escuta (`ss` > `netstat` > `sockstat`)    | Servidor / Desktop    |
+| `services` / `svc`                    | Inspeciona status dos serviços (`systemctl` > `service` > `rc-status`) | Servidor / Desktop    |
+| `l`, `ll`, `la`, `lt`                 | Listagem moderna com ícones e status git (`eza`/`exa`/`ls`).           | Universal             |
+| `g <termo>`                           | Busca inteligente de texto em arquivos (`rg` > `grep`).                | Universal             |
+| `c <arquivo>` / `b`                   | Visualizador formatado com syntax highlighting (`bat` > `cat`).        | Universal             |
+| `f <alvo>` / `ff`                     | Localizador ultrarrápido de arquivos (`fd` > `find`).                  | Universal             |
 
 > 📖 **Consulte o catálogo completo de atalhos e variáveis em [docs/ALIASES.md](docs/ALIASES.md).**
 

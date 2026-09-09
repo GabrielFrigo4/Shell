@@ -5,162 +5,155 @@
 ### --------------------------------
 ### Terminal Editors
 ### --------------------------------
-if command -v nvim > "/dev/null" 2>&1; then
-	open-neovim() {
-		if [ "$#" -eq 0 ]; then
-			command nvim .
-		else
-			command nvim "$@"
-		fi
-	}
-	alias open-nvim="open-neovim"
-	alias on="open-neovim"
-fi
+open-neovim() {
+	command -v nvim > "/dev/null" 2>&1 || { echo "❌ nvim not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command nvim .
+	else
+		command nvim "$@"
+	fi
+}
+alias open-nvim="open-neovim"
+alias on="open-neovim"
 
-if command -v vim > "/dev/null" 2>&1; then
-	open-vim() {
-		if [ "$#" -eq 0 ]; then
-			command vim .
-		else
-			command vim "$@"
-		fi
-	}
-	alias ov="open-vim"
-fi
+open-vim() {
+	command -v vim > "/dev/null" 2>&1 || { echo "❌ vim not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command vim .
+	else
+		command vim "$@"
+	fi
+}
+alias ov="open-vim"
 
-if command -v hx > "/dev/null" 2>&1; then
-	hx() {
-		command hx "$@"
-		local _status=$?
-		[ -t 1 ] && echo -n $'\e[0 q'
-		return ${_status}
-	}
+hx() {
+	command -v hx > "/dev/null" 2>&1 || { echo "❌ hx not found." >&2; return 127; }
+	command hx "$@"
+	local _status=$?
+	[ -t 1 ] && echo -n $'\e[0 q'
+	return ${_status}
+}
 
-	open-helix() {
-		if [ "$#" -eq 0 ]; then
-			hx .
-		else
-			hx "$@"
-		fi
-	}
-	alias open-hx="open-helix"
-	alias oh="open-helix"
-	alias h="open-helix"
-fi
+open-helix() {
+	if [ "$#" -eq 0 ]; then
+		hx .
+	else
+		hx "$@"
+	fi
+}
+alias open-hx="open-helix"
+alias oh="open-helix"
+alias h="open-helix"
 
-if command -v micro > "/dev/null" 2>&1; then
-	open-micro() {
-		if [ "$#" -eq 0 ]; then
-			command micro .
-		else
-			command micro "$@"
-		fi
-	}
-	alias om="open-micro"
-fi
+open-micro() {
+	command -v micro > "/dev/null" 2>&1 || { echo "❌ micro not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command micro .
+	else
+		command micro "$@"
+	fi
+}
+alias om="open-micro"
 
 ### --------------------------------
 ### GUI Editors
 ### --------------------------------
-if command -v kate > "/dev/null" 2>&1; then
-	open-kate() {
-		if [ "$#" -eq 0 ]; then
-			command nohup kate . > "/dev/null" 2>&1 &
-		else
-			command nohup kate "$@" > "/dev/null" 2>&1 &
-		fi
-	}
-	alias ok="open-kate"
-fi
+open-kate() {
+	command -v kate > "/dev/null" 2>&1 || { echo "❌ kate not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command nohup kate . > "/dev/null" 2>&1 &
+	else
+		command nohup kate "$@" > "/dev/null" 2>&1 &
+	fi
+}
+alias ok="open-kate"
 
-if command -v geany > "/dev/null" 2>&1; then
-	open-geany() {
-		if [ "$#" -eq 0 ]; then
-			command nohup geany . > "/dev/null" 2>&1 &
-		else
-			command nohup geany "$@" > "/dev/null" 2>&1 &
-		fi
-	}
-	alias og="open-geany"
-fi
+open-geany() {
+	command -v geany > "/dev/null" 2>&1 || { echo "❌ geany not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command nohup geany . > "/dev/null" 2>&1 &
+	else
+		command nohup geany "$@" > "/dev/null" 2>&1 &
+	fi
+}
+alias og="open-geany"
 
-if command -v code > "/dev/null" 2>&1 || command -v vscode > "/dev/null" 2>&1; then
-	open-code() {
-		local _bin="code"
-		command -v code > "/dev/null" 2>&1 || _bin="vscode"
-		if [ "$#" -eq 0 ]; then
-			command "${_bin}" .
-		else
-			command "${_bin}" "$@"
-		fi
-	}
-	alias oc="open-code"
-fi
+open-code() {
+	local _bin=""
+	command -v code > "/dev/null" 2>&1 && _bin="code"
+	[ -z "${_bin}" ] && command -v vscode > "/dev/null" 2>&1 && _bin="vscode"
+	[ -z "${_bin}" ] && { echo "❌ Neither 'code' nor 'vscode' found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command "${_bin}" .
+	else
+		command "${_bin}" "$@"
+	fi
+}
+alias oc="open-code"
 
-if command -v codium > "/dev/null" 2>&1; then
-	open-codium() {
-		if [ "$#" -eq 0 ]; then
-			command codium .
-		else
-			command codium "$@"
-		fi
-	}
-	alias ocm="open-codium"
-fi
+open-codium() {
+	command -v codium > "/dev/null" 2>&1 || { echo "❌ codium not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command codium .
+	else
+		command codium "$@"
+	fi
+}
+alias ocm="open-codium"
 
-if command -v antigravity-ide > "/dev/null" 2>&1; then
-	open-antigravity() {
-		if [ "$#" -eq 0 ]; then
-			command antigravity-ide .
-		else
-			command antigravity-ide "$@"
-		fi
-	}
-	alias open-ant="open-antigravity"
-	alias oa="open-antigravity"
-	alias ant="antigravity-ide"
-fi
+open-antigravity() {
+	command -v antigravity-ide > "/dev/null" 2>&1 || { echo "❌ antigravity-ide not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command antigravity-ide .
+	else
+		command antigravity-ide "$@"
+	fi
+}
+alias open-ant="open-antigravity"
+alias oa="open-antigravity"
+alias ant="antigravity-ide"
 
-if command -v zed > "/dev/null" 2>&1; then
-	open-zed() {
-		if [ "$#" -eq 0 ]; then
-			command zed .
-		else
-			command zed "$@"
-		fi
-	}
-	alias oz="open-zed"
-fi
+open-zed() {
+	command -v zed > "/dev/null" 2>&1 || { echo "❌ zed not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command zed .
+	else
+		command zed "$@"
+	fi
+}
+alias oz="open-zed"
 
 ### --------------------------------
 ### Emacs Daemon & Client
 ### --------------------------------
-if command -v emacs > "/dev/null" 2>&1 || command -v emacsclient > "/dev/null" 2>&1; then
-	emacs-kill() {
-		command pkill emacs
-	}
-	emacs-start() {
-		command emacs --daemon
-	}
-	emacs-restart() {
-		emacs-kill && emacs-start
-	}
-	emacs-client() {
-		command emacsclient --create-frame --alternate-editor "" "$@"
-	}
-	emacs-open() {
-		if [ "$#" -eq 0 ]; then
-			command nohup emacsclient --create-frame --alternate-editor "" . > "/dev/null" 2>&1 &
-		else
-			command nohup emacsclient --create-frame --alternate-editor "" "$@" > "/dev/null" 2>&1 &
-		fi
-	}
-	alias ek="emacs-kill"
-	alias es="emacs-start"
-	alias er="emacs-restart"
-	alias ec="emacs-client"
-	alias oe="emacs-open"
-fi
+emacs-kill() {
+	command -v emacs > "/dev/null" 2>&1 || command -v emacsclient > "/dev/null" 2>&1 || { echo "❌ emacs not found." >&2; return 127; }
+	command pkill emacs
+}
+emacs-start() {
+	command -v emacs > "/dev/null" 2>&1 || { echo "❌ emacs not found." >&2; return 127; }
+	command emacs --daemon
+}
+emacs-restart() {
+	emacs-kill && emacs-start
+}
+emacs-client() {
+	command -v emacsclient > "/dev/null" 2>&1 || { echo "❌ emacsclient not found." >&2; return 127; }
+	command emacsclient --create-frame --alternate-editor "" "$@"
+}
+emacs-open() {
+	command -v emacsclient > "/dev/null" 2>&1 || { echo "❌ emacsclient not found." >&2; return 127; }
+	if [ "$#" -eq 0 ]; then
+		command nohup emacsclient --create-frame --alternate-editor "" . > "/dev/null" 2>&1 &
+	else
+		command nohup emacsclient --create-frame --alternate-editor "" "$@" > "/dev/null" 2>&1 &
+	fi
+}
+alias ek="emacs-kill"
+alias es="emacs-start"
+alias er="emacs-restart"
+alias ec="emacs-client"
+alias oe="emacs-open"
 
 ### --------------------------------
 ### Servers

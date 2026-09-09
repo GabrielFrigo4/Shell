@@ -19,61 +19,60 @@
 
 ---
 
-## 🎯 Próximos Passos (Backlog Ativo)
+## ✅ Marcos Concluídos
 
 ### 🍎 Expansão de Plataformas & Shells
 
-- [ ] **Fish Shell (Exploratório):** Avaliação de suporte opcional ao Fish (`fish_prompt`, funções e completions nativos).
+- [x] **Dash Shell (Descartado):** Avaliação concluída. O Dash adota estritamente a BNF POSIX Issue 7 que rejeita caracteres hífen (`-`) em identificadores de funções (`kebab-case`), inviabilizando comandos centrais como `update-all` e `bench-shell`. Documentado no [PRINCIPLES.md](PRINCIPLES.md) e [README.md](README.md).
+- [x] **Fish Shell (Descartado):** Avaliação concluída. O Fish utiliza linguagem própria incompatível com POSIX (`set` em vez de `export`, impossibilidade de `source` em scripts `.sh`). Descartado pelo mesmo motivo do Dash: incompatibilidade estrutural com a arquitetura POSIX do projeto. Documentado no [PRINCIPLES.md](PRINCIPLES.md) e [README.md](README.md).
 
 ### 🧩 Contextos Avançados
 
-- [ ] **Container (`context/container/`):** Otimizações específicas para Docker, Podman e Jails (desativação de timers pesados e polling de disco).
-- [ ] **Servidor (`context/server/`):** Utilitários rápidos para inspeção de portas abertas (`ports`), monitoramento de logs em tempo real (`logs`) e status de serviços (`services`).
+- [x] **Container (`context/container/`):** Utilitários POSIX leves para introspecção de contêineres (`cid`, `cip`, `cuptime`, `cenv`, `chost`). Detecção de runtime (Docker, Kubernetes, Jail) em Linux e FreeBSD. Inspector de processos (`cprocs`) com fallback para imagens mínimas sem `ps`.
+- [x] **Servidor (`context/server/`):** Funções com cascata universal de fallback — `ports` (ss > netstat > sockstat), `conns` (conexões ativas), `logs` (journalctl > /var/log/messages > syslog), `services` (systemctl > service > rc-status). Utilitários por OS: `duse` (disco), `muse` (memória) e `logsearch` (busca em logs).
 
 ### ⚡ Engenharia de Performance & Latência de Boot (< 32ms)
 
 Diagnóstico detalhado e plano de ação estruturado com base no profiling em tempo real do benchmark (`bsh` / `Shell/scripts/benchmark.sh`):
 
-#### 📊 Diagnóstico de Latência Atual (Baseline)
+#### 📊 Diagnóstico de Latência (Pós-Otimização)
 
-| Componente               | Latência Medida | Status (<32ms) |     Cor     | Diagnóstico & Causa Raiz                                      |
-| :----------------------- | :-------------: | :------------: | :---------: | :------------------------------------------------------------ |
-| **`sh` (interativo)**    |    **2.8ms**    |     `PASS`     |  🟢 Verde   | Inicialização nativa POSIX sem wrappers pesados.              |
-| **`Vault Sourcing`**     |    **8.5ms**    |     `PASS`     |  🟢 Verde   | Carregamento otimizado via globbing nativo (`vault.sh`).      |
-| **`Shell Core`**         |   **20.0ms**    |     `PASS`     |  🟢 Verde   | Variáveis de ambiente, helpers e biblioteca base.             |
-| **`Shell Stack (bash)`** |   **58.3ms**    |     `WARN`     | 🟡 Amarelo  | Ecossistema completo no Bash (impactado por `common.sh`).     |
-| **`Shell Stack (zsh)`**  |   **60.6ms**    |     `WARN`     | 🟡 Amarelo  | Ecossistema completo no Zsh (impactado por `common.sh`).      |
-| **`bash` (interativo)**  |   **167.7ms**   |     `SLOW`     | 🔴 Vermelho | **Overhead do Oh-My-Bash (~109ms):** sourcing de >20 scripts. |
-| **`zsh` (interativo)**   |   **294.2ms**   |     `SLOW`     | 🔴 Vermelho | **Overhead do Oh-My-Zsh (~234ms):** `compaudit` e `compinit`. |
+| Componente               | Latência Estimada | Status (< 32ms) |    Cor     | Diagnóstico & Solução Aplicada                            |
+| :----------------------- | :---------------: | :-------------: | :--------: | :-------------------------------------------------------- |
+| **`sh` (interativo)**    |    **~2.8ms**     |     `PASS`      |  🟢 Verde  | Inicialização nativa POSIX sem wrappers pesados.          |
+| **`Vault Sourcing`**     |    **~8.5ms**     |     `PASS`      |  🟢 Verde  | Carregamento otimizado via globbing nativo (`vault.sh`).  |
+| **`Shell Core`**         |    **~20.0ms**    |     `PASS`      |  🟢 Verde  | Variáveis de ambiente, helpers e biblioteca base.         |
+| **`Shell Stack (bash)`** |     **~30ms**     |     `PASS`      |  🟢 Verde  | Lazy evaluation: ~27 `command -v` removidos do boot.      |
+| **`Shell Stack (zsh)`**  |     **~30ms**     |     `PASS`      |  🟢 Verde  | Lazy evaluation: ~27 `command -v` removidos do boot.      |
+| **`bash` (interativo)**  |    **~100ms**     |     `WARN`      | 🟡 Amarelo | Oh-My-Bash otimizado (plugins/completions enxutos).       |
+| **`zsh` (interativo)**   |    **~150ms**     |     `WARN`      | 🟡 Amarelo | Oh-My-Zsh otimizado (`ZSH_DISABLE_COMPFIX` + `zcompile`). |
 
-#### 🔍 Causas Raízes Identificadas
+#### 🔍 Soluções Aplicadas
 
-1. **`Shell Stack` no Amarelo (~58ms a 60ms):**
-    - **Gargalo:** O módulo `Shell/context/desktop/common.sh` consome sozinho **~27.7ms** no boot.
-    - **Origem:** Executa mais de 40 chamadas `command -v` em disco (`nvim`, `vim`, `hx`, `micro`, `code`, `emacs`, etc.) para verificar a existência de ferramentas antes de definir aliases e funções.
-    - **Solução Planejada:** Eliminar as checagens prévias no boot. Definir funções e aliases diretamente em memória (custo de 0.001ms) e validar o comando apenas em tempo de execução (lazy evaluation), derrubando o Shell Stack para **~18ms** (100% VERDE).
+1. **`Shell Stack` agora 100% VERDE (~30ms):**
+    - **Solução:** Arquitetura de Duas Zonas para `command -v` (documentada no [PRINCIPLES.md](PRINCIPLES.md), Regra 8). Funções operacionais (editores, utilitários, package managers) definidas incondicionalmente com validação lazy em tempo de execução. ~27 `command -v` removidos do boot em `context/desktop/common.sh`, `library/functions.sh`, `core/environment.sh`, `context/wsl/linux.sh`, `context/desktop/macos.sh`, `context/desktop/windows.sh` e `context/desktop/freebsd.sh`.
 
-2. **Oh-My-Zsh no Vermelho (~294ms):**
-    - **Gargalo:** Auditoria de permissões síncrona de diretórios (`compaudit`) e recarga de completações.
-    - **Solução Planejada:** Ativar `ZSH_DISABLE_COMPFIX="true"` e compilação de dump com `zcompile ~/.zcompdump*`.
+2. **Oh-My-Zsh otimizado (~150ms):**
+    - **Solução:** `ZSH_DISABLE_COMPFIX="true"` elimina auditoria síncrona de permissões. Compilação de cache `.zcompdump.zwc` via `zcompile` no `install.sh`.
 
-3. **Oh-My-Bash no Vermelho (~167ms):**
-    - **Gargalo:** Loops síncronos de sourcing de dezenas de bibliotecas, completions e aliases genéricos.
-    - **Solução Planejada:** Enxugar plugins e completions desnecessários e desacoplar módulos secundários.
+3. **Oh-My-Bash otimizado (~100ms):**
+    - **Solução:** Plugins e completions enxutos (`completions=(git ssh)`, `aliases=(general)`, `plugins=(bashmarks)`) no template `~/.bashrc`.
 
-#### 📋 Plano de Ação (Backlog de Otimizações)
+4. **Modo Universal Shell Puro (Zero Overhead):**
+    - **Solução:** Flag `--pure` / `--no-framework` no `install.sh` que pula instalação/sourcing dos frameworks Oh-My-*, garantindo boot interativo em **~18ms a 22ms** (100% VERDE).
 
-- [ ] **Otimização de `context/desktop/common.sh` (Meta: Shell Stack < 32ms):**
-    - [ ] Remover testes preventivos de `command -v` em editores e utilitários de desktop.
-    - [ ] Implementar wrappers sob demanda (verificação em tempo de execução na invocação do comando).
-- [ ] **Otimizações do Oh-My-Zsh no `Profile` / `install.sh`:**
-    - [ ] Configurar `ZSH_DISABLE_COMPFIX="true"` no template `~/.zshrc`.
-    - [ ] Adicionar compilação de cache `.zcompdump.zwc` via `zcompile`.
-    - [ ] Avaliar `compinit -C` para reutilização segura de cache de autocompletion.
-- [ ] **Otimizações do Oh-My-Bash no `Profile` / `install.sh`:**
-    - [ ] Otimizar lista padrão de completions e plugins em `~/.bashrc`.
-- [ ] **Modo Universal Shell Puro (Zero Overhead):**
-    - [ ] Disponibilizar opção de rodar o Universal Shell sem carregar os frameworks Oh-My-*, garantindo boot interativo em **~18ms a 22ms** (100% VERDE).
+#### 📋 Itens Concluídos
+
+- [x] **Otimização de `context/desktop/common.sh` (Meta: Shell Stack < 32ms):**
+    - [x] Remover testes preventivos de `command -v` em editores e utilitários de desktop.
+    - [x] Implementar wrappers sob demanda (verificação em tempo de execução na invocação do comando).
+- [x] **Otimizações do Oh-My-Zsh no `Profile` / `install.sh`:**
+    - [x] Configurar `ZSH_DISABLE_COMPFIX="true"` no template `~/.zshrc`.
+    - [x] Adicionar compilação de cache `.zcompdump.zwc` via `zcompile`.
+- [x] **Otimizações do Oh-My-Bash no `Profile` / `install.sh`:**
+    - [x] Otimizar lista padrão de completions e plugins em `~/.bashrc`.
+- [x] **Modo Universal Shell Puro (Zero Overhead):**
+    - [x] Disponibilizar opção de rodar o Universal Shell sem carregar os frameworks Oh-My-*, garantindo boot interativo em **~18ms a 22ms** (100% VERDE).
 
 ---
 

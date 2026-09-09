@@ -5,8 +5,27 @@
 ### --------------------------------
 ### Windows Integration
 ### --------------------------------
-command -v explorer.exe > "/dev/null" 2>&1 && alias explorer="explorer.exe"
-command -v powershell.exe > "/dev/null" 2>&1 && alias powershell="powershell.exe"
-command -v pwsh.exe > "/dev/null" 2>&1 && alias pwsh="pwsh.exe"
-command -v cmd.exe > "/dev/null" 2>&1 && alias cmd="cmd.exe"
-command -v win32yank.exe > "/dev/null" 2>&1 && alias clip="win32yank.exe"
+explorer() {
+	command -v explorer.exe > "/dev/null" 2>&1 || { echo "❌ explorer.exe not found." >&2; return 127; }
+	command explorer.exe "$@"
+}
+
+powershell() {
+	command -v powershell.exe > "/dev/null" 2>&1 || { echo "❌ powershell.exe not found." >&2; return 127; }
+	command powershell.exe "$@"
+}
+
+pwsh() {
+	command -v pwsh.exe > "/dev/null" 2>&1 || { echo "❌ pwsh.exe not found." >&2; return 127; }
+	command pwsh.exe "$@"
+}
+
+cmd() {
+	command -v cmd.exe > "/dev/null" 2>&1 || { echo "❌ cmd.exe not found." >&2; return 127; }
+	command cmd.exe "$@"
+}
+
+clip() {
+	command -v win32yank.exe > "/dev/null" 2>&1 || { echo "❌ win32yank.exe not found." >&2; return 127; }
+	command win32yank.exe "$@"
+}

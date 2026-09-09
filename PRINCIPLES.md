@@ -64,7 +64,19 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 
 > _A robustez é filha da transparência e da simplicidade._
 
-- Tratamento defensivo: antes de criar um alias para um utilitário externo (ex: `bat`, `eza`, `fzf`), o shell verifica se o binário realmente existe no sistema (`command -v`), evitando erros de comando inexistente.
+- **Tratamento Defensivo em Duas Zonas (`command -v`):**
+    - **Zone A (Boot-Time):** Checagens `command -v` no nível top-level (fora de funções) durante a inicialização da sessão são reservadas **exclusivamente** para:
+        - Exportação de variáveis de ambiente que devem existir antes de qualquer programa (ex: `GTK_THEME`, `EDITOR`, `VISUAL`).
+        - Aliases de compatibilidade bidirecional entre ferramentas intercambiáveis (ex: `doas` ↔ `sudo`, `paru` ↔ `yay`).
+        - Cascatas canônicas de ferramentas modernas (ex: `eza` > `exa` > `ls`, `bat` > `batcat` > `cat`).
+    - **Zone B (Runtime — Lazy Evaluation):** Comandos operacionais do usuário — editores, utilitários de contexto, funções de package managers — são definidos **incondicionalmente** no boot (custo ~0.001ms por definição de função em memória) e validam a existência do binário **em tempo de execução**, na primeira invocação. Isso garante boot ultrarrápido sem sacrificar feedback claro ao usuário:
+        ```sh
+        open-editor() {
+            command -v editor > "/dev/null" 2>&1 || { echo "❌ editor not found." >&2; return 127; }
+            command editor "$@"
+        }
+        ```
+    - **Padrão de Erro Zone B:** Funções que falharem na validação runtime devem emitir mensagem no `stderr` (`>&2`) e retornar código `127` (_command not found_ padrão POSIX).
 - **Degradação Graciosa:** Se o `Vault` não estiver instalado ou montado na máquina, o Shell funciona perfeitamente em modo anônimo, sem travar nem exibir mensagens de erro assustadoras.
 
 ### 9. Regra da Representação (_Rule of Representation_)
@@ -116,7 +128,9 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 - Compatibilidade universal com múltiplos shells:
     - **Zsh:** Shell primário interativo moderno com autocompletion avançado.
     - **Bash:** Shell padrão universal presente na maioria das distribuições Linux e servidores.
-    - **Sh:** Shell POSIX leve e fundamental (FreeBSD `/bin/sh`, Debian `dash`), essencial para inicialização rápida e sistemas embarcados.
+    - **Sh:** Shell POSIX leve e fundamental (FreeBSD `/bin/sh`), essencial para inicialização rápida e sistemas embarcados.
+    - **Dash Shell (`dash`) — Descartado:** O Dash aplica estritamente a BNF POSIX Issue 7 que rejeita caracteres hífen (`-`) em identificadores de funções. Como o ecossistema Universal Shell adota a convenção `kebab-case` para todas as suas funções públicas e utilitárias (ex: `update-all`, `bench-shell`, `open-editor`), o Dash se torna inviável para uso interativo no projeto.
+    - **Fish Shell (`fish`) — Descartado:** O Fish utiliza uma linguagem própria incompatível com POSIX (`set` em vez de `export`, loops e condicionais com sintaxe distinta, impossibilidade de `source` em scripts `.sh`). A arquitetura do Universal Shell depende fundamentalmente de sourcing POSIX (`library/`, `core/`, `context/`), expansões de parâmetro `${VAR}`, `command -v` e funções `kebab-case` — nenhuma dessas funcionalidades é suportada nativamente pelo Fish. Assim como o `dash` foi descartado por impedir nomes `kebab-case` (BNF POSIX estrita), o Fish é descartado por impedir o sourcing POSIX que é o pilar central da arquitetura.
 
 ### 17. Regra da Extensibilidade (_Rule of Extensibility_)
 
