@@ -158,6 +158,7 @@ HISTFILESIZE=20000
 
 shopt -s histappend
 shopt -s checkwinsize
+set -o noclobber
 
 ### --------------------------------
 ### System Completions
@@ -264,9 +265,9 @@ _install_shell_target() {
 
 	if [ "${SHELL_FRAMEWORK}" -eq 0 ]; then
 		case "${_target_shell}" in
-			bash) _generate_bashrc_pure > "${_rc_file}" ;;
-			zsh)  _generate_zshrc_pure > "${_rc_file}" ;;
-			sh)   _generate_shrc_pure > "${_rc_file}" ;;
+			bash) _generate_bashrc_pure >| "${_rc_file}" ;;
+			zsh)  _generate_zshrc_pure >| "${_rc_file}" ;;
+			sh)   _generate_shrc_pure >| "${_rc_file}" ;;
 		esac
 		if [ "${OS_NAME}" != "windows" ]; then
 			case "${_target_shell}" in
