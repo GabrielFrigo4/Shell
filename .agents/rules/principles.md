@@ -2,6 +2,8 @@
 
 Essas diretrizes são de aplicação obrigatória para qualquer modificação ou extensão neste repositório (`/usr/local/share/shell`).
 
+> 🏛️ **Hub Orquestrador:** Este repositório faz parte do [Quarteto de Produtividade](https://github.com/GabrielFrigo4/environment), orquestrado pelo repositório **Environment**. Consulte o `ENVIRONMENT.md` e `PRINCIPLES.md` canônicos na raiz do Environment para a arquitetura completa.
+
 ## 1. Linha de Base de Portabilidade (FreeBSD `/bin/sh`) & Sequências de Escape
 
 - O shell nativo do FreeBSD (`/bin/sh`) é a régua máxima e baseline de portabilidade para scripts compartilhados em `library/`, `core/` e `install.sh`.
