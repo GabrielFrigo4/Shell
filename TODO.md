@@ -1,80 +1,43 @@
 # 🗺️ Roadmap & Backlog
 
-> Planejamento estratégico, marcos entregues e visão de futuro para a evolução do **Universal Shell**.
+> Planejamento estratégico, status operacional e visão de futuro para a evolução do **Universal Shell**.
 
 ---
 
 ## 📊 Status do Projeto
 
-| Área                     |   Status   | Cobertura                                                           |
-| :----------------------- | :--------: | :------------------------------------------------------------------ |
-| **🖥️ Plataformas Base**  | 🟢 Estável | Linux, FreeBSD, Windows (MSYS2), macOS (base)                       |
-| **🐚 Shells Nativos**    | 🟢 Estável | Bash, Zsh, POSIX sh (Linux & FreeBSD)                               |
-| **🎯 Contextos**         | 🟢 Estável | Desktop, Server, Container, WSL                                     |
-| **🎨 Temas & TTY**       | 🟢 Estável | Adaptação dinâmica PTY / Raw TTY em Zsh, Bash e Sh                  |
-| **⚡ Modern CLI**        | 🟢 Estável | Cascata inteligente (`eza`, `bat`, `rg`, `fd` > nativos)            |
-| **🌳 VCS & Prompts**     | 🟢 Estável | Git e Got (Game of Trees)                                           |
-| **💎 Clean Code**        |  🟢 100%   | 18 Princípios UNIX & Taxonomia de 3 níveis de biblioteca            |
-| **🧪 Automação & CI/CD** | 🟢 Estável | Git Hooks locais (`.githooks/pre-commit`) + GitHub Actions multi-OS |
+| Área                           |   Status   | Cobertura                                                                                |
+| :----------------------------- | :--------: | :--------------------------------------------------------------------------------------- |
+| **🖥️ Plataformas Base**        | 🟢 Estável | Linux, FreeBSD, Windows (MSYS2), macOS (base)                                            |
+| **🐚 Shells Nativos**          | 🟢 Estável | Bash, Zsh, POSIX sh (Linux & FreeBSD) com detecção e paridade universal                  |
+| **🎯 Contextos**               | 🟢 Estável | Desktop, Server, Container, WSL com carregamento modular sob demanda                     |
+| **🎨 Temas Puros & TTY**       | 🟢 Estável | Motores em `theme/` dedicados à renderização visual e adaptação dinâmica PTY / Raw TTY   |
+| **⚙️ Shell Configs Comuns**    | 🟢 Estável | Centralização em `target/common/` (`bash.sh`, `zsh.sh`, `sh.sh`) para histórico e opções |
+| **🛡️ Segurança & Proteção**    | 🟢 Estável | Rigor `noclobber` padronizado (`set -o noclobber`, `setopt NO_CLOBBER`, `set -C`)        |
+| **⚡ Motor de Cache & Boot**   | 🟢 Estável | Two-Tier Cache (Memória + `tmpfs` RAM disk) com boot < 35ms                              |
+| **📦 Instalador Multi-Shell**  | 🟢 Estável | Detecção automática em lote de shells e templates standalone puros (`SHELL_FRAMEWORK=0`) |
+| **⚡ Modern CLI**              | 🟢 Estável | Cascata inteligente (`eza`, `bat`, `rg`, `fd` > nativos)                                 |
+| **🌳 VCS & Prompts**           | 🟢 Estável | Git e Got (Game of Trees) com status de modificação em tempo real                        |
+| **💎 Clean Code & Princípios** |  🟢 100%   | 18 Princípios UNIX, comentários simétricos de 36 colunas e Zero Warnings                 |
+| **🧪 Automação & CI/CD**       | 🟢 Estável | Git Hooks locais (`.githooks/pre-commit`) + GitHub Actions multi-OS                      |
 
 ---
 
-## ✅ Marcos Concluídos
+## 🔮 Visão de Futuro & Próximas Frentes
 
-### 🍎 Expansão de Plataformas & Shells
+Novas frentes e refinamentos mapeados para futuras iterações do ecossistema:
 
-- [x] **Dash Shell (Descartado):** Avaliação concluída. O Dash adota estritamente a BNF POSIX Issue 7 que rejeita caracteres hífen (`-`) em identificadores de funções (`kebab-case`), inviabilizando comandos centrais como `update-all` e `bench-shell`. Documentado no [PRINCIPLES.md](PRINCIPLES.md) e [README.md](README.md).
-- [x] **Fish Shell (Descartado):** Avaliação concluída. O Fish utiliza linguagem própria incompatível com POSIX (`set` em vez de `export`, impossibilidade de `source` em scripts `.sh`). Descartado pelo mesmo motivo do Dash: incompatibilidade estrutural com a arquitetura POSIX do projeto. Documentado no [PRINCIPLES.md](PRINCIPLES.md) e [README.md](README.md).
+### 🧪 Testes & Integração Contínua
 
-### 🧩 Contextos Avançados
+- [ ] **Matriz Expandida de CI:** Execução automatizada de testes de paridade no GitHub Actions rodando runners nativos de Linux, FreeBSD (via VM/Jail Action) e macOS.
+- [ ] **Métricas Contínuas de Latência:** Adicionar asserções estritas de tempo de boot (< 35ms) em rotinas de CI em pull requests.
 
-- [x] **Container (`context/container/`):** Utilitários POSIX leves para introspecção de contêineres (`cid`, `cip`, `cuptime`, `cenv`, `chost`). Detecção de runtime (Docker, Kubernetes, Jail) em Linux e FreeBSD. Inspector de processos (`cprocs`) com fallback para imagens mínimas sem `ps`.
-- [x] **Servidor (`context/server/`):** Funções com cascata universal de fallback — `ports` (ss > netstat > sockstat), `conns` (conexões ativas), `logs` (journalctl > /var/log/messages > syslog), `services` (systemctl > service > rc-status). Utilitários por OS: `duse` (disco), `muse` (memória) e `logsearch` (busca em logs).
+### 🌐 Conectividade & Ferramentas
 
-### ⚡ Engenharia de Performance & Latência de Boot (< 32ms)
-
-Diagnóstico detalhado e plano de ação estruturado com base no profiling em tempo real do benchmark (`bsh` / `Shell/scripts/benchmark.sh`):
-
-#### 📊 Diagnóstico de Latência (Pós-Otimização)
-
-| Componente               | Latência Estimada | Status (< 32ms) |    Cor     | Diagnóstico & Solução Aplicada                            |
-| :----------------------- | :---------------: | :-------------: | :--------: | :-------------------------------------------------------- |
-| **`sh` (interativo)**    |    **~2.8ms**     |     `PASS`      |  🟢 Verde  | Inicialização nativa POSIX sem wrappers pesados.          |
-| **`Vault Sourcing`**     |    **~8.5ms**     |     `PASS`      |  🟢 Verde  | Carregamento otimizado via globbing nativo (`vault.sh`).  |
-| **`Shell Core`**         |    **~20.0ms**    |     `PASS`      |  🟢 Verde  | Variáveis de ambiente, helpers e biblioteca base.         |
-| **`Shell Stack (bash)`** |     **~30ms**     |     `PASS`      |  🟢 Verde  | Lazy evaluation: ~27 `command -v` removidos do boot.      |
-| **`Shell Stack (zsh)`**  |     **~30ms**     |     `PASS`      |  🟢 Verde  | Lazy evaluation: ~27 `command -v` removidos do boot.      |
-| **`bash` (interativo)**  |    **~100ms**     |     `WARN`      | 🟡 Amarelo | Oh-My-Bash otimizado (plugins/completions enxutos).       |
-| **`zsh` (interativo)**   |    **~150ms**     |     `WARN`      | 🟡 Amarelo | Oh-My-Zsh otimizado (`ZSH_DISABLE_COMPFIX` + `zcompile`). |
-
-#### 🔍 Soluções Aplicadas
-
-1. **`Shell Stack` agora 100% VERDE (~30ms):**
-    - **Solução:** Arquitetura de Duas Zonas para `command -v` (documentada no [PRINCIPLES.md](PRINCIPLES.md), Regra 8). Funções operacionais (editores, utilitários, package managers) definidas incondicionalmente com validação lazy em tempo de execução. ~27 `command -v` removidos do boot em `context/desktop/common.sh`, `library/functions.sh`, `core/environment.sh`, `context/wsl/linux.sh`, `context/desktop/macos.sh`, `context/desktop/windows.sh` e `context/desktop/freebsd.sh`.
-
-2. **Oh-My-Zsh otimizado (~150ms):**
-    - **Solução:** `ZSH_DISABLE_COMPFIX="true"` elimina auditoria síncrona de permissões. Compilação de cache `.zcompdump.zwc` via `zcompile` no `install.sh`.
-
-3. **Oh-My-Bash otimizado (~100ms):**
-    - **Solução:** Plugins e completions enxutos (`completions=(git ssh)`, `aliases=(general)`, `plugins=(bashmarks)`) no template `~/.bashrc`.
-
-4. **Modo Universal Shell Puro (Zero Overhead & Templates Standalone):**
-    - **Solução:** Suporte à flag `--pure` / `--no-framework` no `install.sh` e `reinstall-shell` (`resh`) padronizado em `SHELL_FRAMEWORK=0`. Gera arquivos base elegantes e limpos para `~/.bashrc`, `~/.zshrc` e `~/.shrc` (guards de interatividade, opções de histórico, proteção `noclobber`, completamentos nativos e compinit compilado) sem depender de frameworks externos, integrando cache em memória (`_DETECTED_*`) e fast-path em tmpfs (`_SHELL_CACHE_DIR`).
-
-#### 📋 Itens Concluídos
-
-- [x] **Otimização de `context/desktop/common.sh` (Meta: Shell Stack < 32ms):**
-    - [x] Remover testes preventivos de `command -v` em editores e utilitários de desktop.
-    - [x] Implementar wrappers sob demanda (verificação em tempo de execução na invocação do comando).
-- [x] **Otimizações do Oh-My-Zsh no `Profile` / `install.sh`:**
-    - [x] Configurar `ZSH_DISABLE_COMPFIX="true"` no template `~/.zshrc`.
-    - [x] Adicionar compilação de cache `.zcompdump.zwc` via `zcompile`.
-- [x] **Otimizações do Oh-My-Bash no `Profile` / `install.sh`:**
-    - [x] Otimizar lista padrão de completions e plugins em `~/.bashrc`.
-- [x] **Modo Universal Shell Puro (Zero Overhead):**
-    - [x] Disponibilizar opção de rodar o Universal Shell sem carregar os frameworks Oh-My-*, garantindo boot interativo em **~18ms a 22ms** (100% VERDE).
+- [ ] **Expansão de Contexto Cloud/Remoto:** Avaliar perfil dedicado para conexões remotas em SSH com largura de banda restrita (detecção via `SSH_CLIENT` / `SSH_TTY`).
+- [ ] **Aliases Avançados para Ferramentas Modernas:** Integração opcional com ferramentas Rust adicionais (`dust`, `procs`, `bottom`/`btm`) mantendo o Princípio da Cascata de Fallback.
 
 ---
 
 > [!TIP]
-> Para detalhes sobre convenções de código e diretrizes de contribuição, consulte [PRINCIPLES.md](PRINCIPLES.md).
+> Para detalhes sobre convenções de código e diretrizes de engenharia, consulte o [PRINCIPLES.md](PRINCIPLES.md).
