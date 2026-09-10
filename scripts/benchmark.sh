@@ -26,7 +26,6 @@ _c_yellow=$'\e[33m'
 _c_red=$'\e[31m'
 _c_cyan=$'\e[36m'
 
-
 printf "%b⚡ Shell Startup Latency Benchmark%b (iters: %s, standard: 2^n)\n\n" "${_c_bold}${_c_cyan}" "${_c_reset}" "${_iterations}"
 
 ### --------------------------------
@@ -98,19 +97,28 @@ printf "%s\n" "----------------------------------------------------"
 _shell_core_ms="$(_measure_cmd "sh -c '. ${_repo_dir}/library/detect.sh; . ${_repo_dir}/library/functions.sh; . ${_repo_dir}/core/environment.sh'")"
 printf "%-24s %b\n" "Shell Core (sh)" "$(_format_ms "${_shell_core_ms}")"
 
+if command -v sh > "/dev/null" 2>&1; then
+	_prompt_sh="${_repo_dir}/target/${_os}/sh/prompt.sh"
+	if [ -f "${_prompt_sh}" ]; then
+		_shell_sh_ms="$(_measure_cmd "sh -c 'export SHELL_REPO_DIR=${_repo_dir}; for f in ${_repo_dir}/library/*.sh ${_repo_dir}/core/*.sh; do . \"\$f\"; done; . \"${_prompt_sh}\"'")"
+		printf "%-24s %b\n" "Shell Stack (sh)" "$(_format_ms "${_shell_sh_ms}")"
+	fi
+fi
+
 if command -v bash > "/dev/null" 2>&1; then
-	_shell_bash_ms="$(_measure_cmd "bash -c 'export SHELL_REPO_DIR=${_repo_dir}; for f in ${_repo_dir}/library/*.sh ${_repo_dir}/core/*.sh; do . \"\$f\"; done; . ${_repo_dir}/target/linux/bash/prompt.sh'")"
-	printf "%-24s %b\n" "Shell Stack (bash)" "$(_format_ms "${_shell_bash_ms}")"
+	_prompt_bash="${_repo_dir}/target/${_os}/bash/prompt.sh"
+	[ ! -f "${_prompt_bash}" ] && _prompt_bash="${_repo_dir}/target/linux/bash/prompt.sh"
+	if [ -f "${_prompt_bash}" ]; then
+		_shell_bash_ms="$(_measure_cmd "bash -c 'export SHELL_REPO_DIR=${_repo_dir}; for f in ${_repo_dir}/library/*.sh ${_repo_dir}/core/*.sh; do . \"\$f\"; done; . \"${_prompt_bash}\"'")"
+		printf "%-24s %b\n" "Shell Stack (bash)" "$(_format_ms "${_shell_bash_ms}")"
+	fi
 fi
 
 if command -v zsh > "/dev/null" 2>&1; then
-	_shell_zsh_ms="$(_measure_cmd "zsh -c 'export SHELL_REPO_DIR=${_repo_dir}; for f in ${_repo_dir}/library/*.sh ${_repo_dir}/core/*.sh; do . \"\$f\"; done; . ${_repo_dir}/target/linux/zsh/prompt.sh'")"
-	printf "%-24s %b\n" "Shell Stack (zsh)" "$(_format_ms "${_shell_zsh_ms}")"
+	_prompt_zsh="${_repo_dir}/target/${_os}/zsh/prompt.sh"
+	[ ! -f "${_prompt_zsh}" ] && _prompt_zsh="${_repo_dir}/target/linux/zsh/prompt.sh"
+	if [ -f "${_prompt_zsh}" ]; then
+		_shell_zsh_ms="$(_measure_cmd "zsh -c 'export SHELL_REPO_DIR=${_repo_dir}; for f in ${_repo_dir}/library/*.sh ${_repo_dir}/core/*.sh; do . \"\$f\"; done; . \"${_prompt_zsh}\"'")"
+		printf "%-24s %b\n" "Shell Stack (zsh)" "$(_format_ms "${_shell_zsh_ms}")"
+	fi
 fi
-
-if [ -f "${_vault_dir}/vault.sh" ]; then
-	_vault_ms="$(_measure_cmd "sh -c '. ${_vault_dir}/vault.sh'")"
-	printf "%-24s %b\n" "Vault Sourcing (sh)" "$(_format_ms "${_vault_ms}")"
-fi
-
-printf "\n%b✨ Benchmark completed successfully.%b\n" "${_c_green}" "${_c_reset}"
