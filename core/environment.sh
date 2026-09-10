@@ -12,9 +12,13 @@ unset CDPATH
 ### --------------------------------
 ### Auto-Correct SHELL
 ### --------------------------------
-if [ -z "${SHELL:-}" ]; then
-	export SHELL="$(command -v "${_DETECTED_SHELL:-$(_detect_shell)}" 2> "/dev/null")"
-fi
+_current_sh="${_DETECTED_SHELL:-$(_detect_shell)}"
+case "${SHELL:-}" in
+	*"/${_current_sh}") ;;
+	*) export SHELL="$(command -v "${_current_sh}" 2> "/dev/null")" ;;
+esac
+unset _current_sh
+
 
 ### --------------------------------
 ### Privilege Escalation Aliases

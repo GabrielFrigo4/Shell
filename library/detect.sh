@@ -29,12 +29,13 @@ _cache_read() {
 ### --------------------------------
 _cache_write() {
 	[ -d "${_SHELL_CACHE_DIR}" ] || command mkdir -p "${_SHELL_CACHE_DIR}" 2> "/dev/null" || return 1
-	printf "%s\n" "${2}" >| "${_SHELL_CACHE_DIR}/${1}" 2> "/dev/null"
-	_var_name="_DETECTED_$(printf "%s" "${1}" | tr '[:lower:]' '[:upper:]')"
-	printf "%s=\"%s\"\n" "${_var_name}" "${2}" >> "${_SHELL_CACHE_FILE}" 2> "/dev/null" || true
+	echo "${2}" >| "${_SHELL_CACHE_DIR}/${1}" 2> "/dev/null"
+	_var_name="_DETECTED_$(echo "${1}" | tr '[:lower:]' '[:upper:]')"
+	echo "${_var_name}=\"${2}\"" >> "${_SHELL_CACHE_FILE}" 2> "/dev/null" || true
 	eval "${_var_name}=\"\${2}\"" 2> "/dev/null" || true
 	unset _var_name
 }
+
 
 ### --------------------------------
 ### Cache Clean
