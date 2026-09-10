@@ -3,6 +3,12 @@
 ### ================================
 
 ### --------------------------------
+### Compatibility & Parsing
+### --------------------------------
+setopt SH_WORD_SPLIT
+unset IFS
+
+### --------------------------------
 ### History
 ### --------------------------------
 HISTSIZE=10000
@@ -47,8 +53,8 @@ setopt GLOB_DOTS
 ### --------------------------------
 autoload -Uz compinit
 if [ -f "${HOME}/.zcompdump" ]; then
-	compinit -C -d "${HOME}/.zcompdump"
+    compinit -C -d "${HOME}/.zcompdump"
 else
-	compinit -d "${HOME}/.zcompdump"
+    compinit -d "${HOME}/.zcompdump"
 fi
 [ -f "${HOME}/.zcompdump.zwc" ] || (zcompile "${HOME}/.zcompdump" 2> "/dev/null" &)

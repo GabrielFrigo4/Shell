@@ -130,7 +130,7 @@ reinstall-shell() {
 	fi
 
 	echo "🔧 Re-running install.sh with context '${SHELL_CONTEXT:-desktop}'..."
-	"$(command -v "$(_detect_shell)" 2> "/dev/null")" "${SHELL_REPO_DIR}/install.sh" ${_args} "$@"
+	sh "${SHELL_REPO_DIR}/install.sh" ${_args} "$@"
 
 	echo "♻️ Reloading shell environment..."
 	. "${HOME}/.$(_detect_shell)rc" 2> "/dev/null" || true
