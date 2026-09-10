@@ -37,3 +37,6 @@ SHELL_CONTEXT="${SHELL_CONTEXT:-desktop}"
 ### ================================
 ### SHELL CONFIGURATION
 ### ================================
+
+[ -f "${SHELL_REPO_DIR}/target/common/bash.sh" ] && \
+	. "${SHELL_REPO_DIR}/target/common/bash.sh"

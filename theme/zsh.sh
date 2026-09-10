@@ -1,50 +1,8 @@
 ### ================================
-### SHELL OPTIONS SETUP
-### ================================
-
-### --------------------------------
-### Expansion
-### --------------------------------
-setopt PROMPT_SUBST
-
-### --------------------------------
-### Globbing
-### --------------------------------
-setopt EXTENDED_GLOB
-setopt GLOB_DOTS
-
-### --------------------------------
-### History
-### --------------------------------
-setopt SHARE_HISTORY
-setopt HIST_IGNORE_DUPS
-setopt HIST_IGNORE_SPACE
-setopt HIST_REDUCE_BLANKS
-setopt HIST_EXPIRE_DUPS_FIRST
-setopt HIST_FIND_NO_DUPS
-setopt HIST_VERIFY
-
-### --------------------------------
-### Interaction
-### --------------------------------
-setopt CORRECT
-setopt INTERACTIVE_COMMENTS
-setopt RM_STAR_WAIT
-setopt NO_CLOBBER
-unsetopt BEEP
-
-### --------------------------------
-### Navigation
-### --------------------------------
-setopt AUTO_CD
-setopt AUTO_PUSHD
-setopt PUSHD_IGNORE_DUPS
-setopt PUSHD_SILENT
-setopt COMPLETE_IN_WORD
-
-### ================================
 ### SHELL APPEARANCE
 ### ================================
+
+setopt PROMPT_SUBST
 
 () {
 	if _is_raw_tty; then

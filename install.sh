@@ -133,106 +133,17 @@ if [ -d "${SHELL_REPO_DIR}/.git" ] && command -v git > "/dev/null" 2>&1; then
 fi
 
 ### --------------------------------
-### Standalone Base Templates
+### Standalone Base Template
 ### --------------------------------
-_generate_bashrc_pure() {
+_generate_rc_pure() {
 	cat << 'EOF'
 ### ================================
-### BASH CONFIGURATION
+### INTERACTIVE GUARD
 ### ================================
-
-### --------------------------------
-### Interactive Guard
-### --------------------------------
 case "$-" in
 	*i*) ;;
 	*) return ;;
 esac
-
-### --------------------------------
-### Shell Options & History
-### --------------------------------
-HISTCONTROL=ignoreboth
-HISTSIZE=10000
-HISTFILESIZE=20000
-
-shopt -s histappend
-shopt -s checkwinsize
-set -o noclobber
-
-### --------------------------------
-### System Completions
-### --------------------------------
-if ! shopt -oq posix; then
-	if [ -f "/usr/share/bash-completion/bash_completion" ]; then
-		. "/usr/share/bash-completion/bash_completion"
-	elif [ -f "/etc/bash_completion" ]; then
-		. "/etc/bash_completion"
-	fi
-fi
-EOF
-}
-
-_generate_zshrc_pure() {
-	cat << 'EOF'
-### ================================
-### ZSH CONFIGURATION
-### ================================
-
-### --------------------------------
-### Interactive Guard
-### --------------------------------
-case "$-" in
-	*i*) ;;
-	*) return ;;
-esac
-
-### --------------------------------
-### Shell Options & History
-### --------------------------------
-HISTSIZE=10000
-SAVEHIST=20000
-HISTFILE="${HOME}/.zsh_history"
-
-setopt APPEND_HISTORY
-setopt SHARE_HISTORY
-setopt HIST_IGNORE_DUPS
-setopt HIST_IGNORE_SPACE
-setopt HIST_REDUCE_BLANKS
-setopt AUTO_CD
-
-### --------------------------------
-### Completion Engine
-### --------------------------------
-autoload -Uz compinit
-if [ -f "${HOME}/.zcompdump" ]; then
-	compinit -C -d "${HOME}/.zcompdump"
-else
-	compinit -d "${HOME}/.zcompdump"
-fi
-[ -f "${HOME}/.zcompdump.zwc" ] || (zcompile "${HOME}/.zcompdump" 2> "/dev/null" &)
-EOF
-}
-
-_generate_shrc_pure() {
-	cat << 'EOF'
-### ================================
-### POSIX SH CONFIGURATION
-### ================================
-
-### --------------------------------
-### Interactive Guard
-### --------------------------------
-case "$-" in
-	*i*) ;;
-	*) return ;;
-esac
-
-### --------------------------------
-### Shell Options & History
-### --------------------------------
-HISTSIZE=5000
-set -C
 EOF
 }
 
@@ -265,17 +176,9 @@ _install_shell_target() {
 	fi
 
 	if [ "${SHELL_FRAMEWORK}" -eq 0 ]; then
-		case "${_target_shell}" in
-			bash) _generate_bashrc_pure >| "${_rc_file}" ;;
-			zsh)  _generate_zshrc_pure >| "${_rc_file}" ;;
-			sh)   _generate_shrc_pure >| "${_rc_file}" ;;
-		esac
+		_generate_rc_pure >| "${_rc_file}"
 		if [ "${OS_NAME}" != "windows" ]; then
-			case "${_target_shell}" in
-				bash) _generate_bashrc_pure | _as_root tee "${_root_rc_file}" > "/dev/null" ;;
-				zsh)  _generate_zshrc_pure | _as_root tee "${_root_rc_file}" > "/dev/null" ;;
-				sh)   _generate_shrc_pure | _as_root tee "${_root_rc_file}" > "/dev/null" ;;
-			esac
+			_generate_rc_pure | _as_root tee "${_root_rc_file}" > "/dev/null"
 		fi
 	else
 		case "${_target_shell}" in
