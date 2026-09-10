@@ -90,11 +90,12 @@ sh "${HOME}/.shell/install.sh" --context desktop
 
 ### ⚙️ Opções do Instalador
 
-| Opção       |      Atalho      | Valores                                 |   Padrão   | Descrição                                                           |
-| :---------- | :--------------: | :-------------------------------------- | :--------: | :------------------------------------------------------------------ |
-| `--context` |       `-c`       | `desktop`, `server`, `container`, `wsl` | `desktop`  | Perfil de contexto do ambiente.                                     |
-| `--shell`   |       `-s`       | `all`, `bash`, `zsh`, `sh`              |   `all`    | Instala em todos os shells instalados ou em um alvo específico.     |
-| `--pure`    | `--no-framework` | Flag booleana                           | Desativado | Instalação pura (sem frameworks Oh-My-\*, boot ultrarrápido <20ms). |
+| Opção         |      Atalho      | Valores                                 |   Padrão   | Descrição                                                                    |
+| :------------ | :--------------: | :-------------------------------------- | :--------: | :--------------------------------------------------------------------------- |
+| `--context`   |       `-c`       | `desktop`, `server`, `container`, `wsl` | `desktop`  | Perfil de contexto do ambiente.                                              |
+| `--shell`     |       `-s`       | `all`, `bash`, `zsh`, `sh`              |   `all`    | Instala em todos os shells instalados ou em um alvo específico.              |
+| `--framework` | `--oh-my-shell`  | Flag booleana                           | Desativado | Habilita frameworks externos de terceiros (Oh-My-Bash / Oh-My-Zsh).          |
+| `--pure`      | `--no-framework` | Flag booleana                           |  Ativado   | Modo padrão: templates standalone nativos, zero overhead e boot instantâneo. |
 
 ---
 
@@ -104,8 +105,9 @@ sh "${HOME}/.shell/install.sh" --context desktop
 | :------------------------------------ | :--------------------------------------------------------------------- | :-------------------- |
 | `update-all` / `upall` / `u`          | **Orquestrador Global:** Atualiza SO + AUR + Flatpak + Snap.           | Universal             |
 | `update-system` / `upsys`             | Atualiza pacotes do sistema operacional nativo.                        | Universal             |
-| `update-shell` / `upsh`               | Atualiza o repositório do shell (`git pull`) e recarrega a sessão.     | Universal             |
+| `update-shell` / `upsh`               | Atualiza o repositório do shell (`git pull`), limpa cache e recarrega. | Universal             |
 | `reinstall-shell` / `resh`            | Reexecuta o instalador em todos os shells instalados no SO.            | Universal             |
+| `clean-cache` / `ccache`              | Limpa o cache em memória e tmpfs de todos os detectores do ambiente.   | Universal             |
 | `update-vault` / `upvt`               | Sincroniza segredos (`~/.vault`) e recarrega chaves SSH.               | Universal             |
 | `bench-shell` / `bsh` / `shell-bench` | Mede a latência de inicialização dos shells e módulos isolados.        | Universal             |
 | `update-wifi` / `upwf`                | Sincroniza credenciais Wi-Fi configuradas com o SO.                    | Linux, BSD, Windows   |

@@ -1,4 +1,49 @@
 ### ================================
+### CACHE ENGINE
+### ================================
+
+### --------------------------------
+### Cache Directory
+### --------------------------------
+_SHELL_CACHE_DIR="${XDG_RUNTIME_DIR:-/tmp}/.universal_shell_cache_${USER:-$(id -un 2> "/dev/null" || echo "user")}"
+
+### --------------------------------
+### Cache Read
+### --------------------------------
+_cache_read() {
+	local _file="${_SHELL_CACHE_DIR}/${1}"
+	if [ -f "${_file}" ]; then
+		local _val
+		read -r _val < "${_file}" 2> "/dev/null"
+		echo "${_val}"
+		return 0
+	fi
+	return 1
+}
+
+### --------------------------------
+### Cache Write
+### --------------------------------
+_cache_write() {
+	[ -d "${_SHELL_CACHE_DIR}" ] || command mkdir -p "${_SHELL_CACHE_DIR}" 2> "/dev/null" || return 1
+	printf "%s\n" "${2}" > "${_SHELL_CACHE_DIR}/${1}" 2> "/dev/null"
+}
+
+### --------------------------------
+### Cache Clean
+### --------------------------------
+_cache_clean() {
+	if [ -d "${_SHELL_CACHE_DIR}" ]; then
+		command rm -rf "${_SHELL_CACHE_DIR}" 2> "/dev/null" || true
+	fi
+	unset _DETECTED_OS _DETECTED_SHELL _DETECTED_DISTRO _DETECTED_DISTRO_FAMILY \
+		_DETECTED_DESKTOP_ENV _DETECTED_COLOR_SCHEME _DETECTED_GTK_THEME \
+		_DETECTED_QT_THEME _DETECTED_QT_PLATFORM_THEME _DETECTED_EZA \
+		_DETECTED_BAT _DETECTED_RG _DETECTED_FD _DETECTED_ESCALATOR \
+		_DETECTED_KERNEL_RELEASE 2> "/dev/null" || true
+}
+
+### ================================
 ### SHELL DETECTION
 ### ================================
 
@@ -7,6 +52,12 @@
 ### --------------------------------
 _detect_os() {
 	[ -n "${_DETECTED_OS:-}" ] && echo "${_DETECTED_OS}" && return 0
+	_DETECTED_OS="$(_cache_read "os")"
+	if [ -n "${_DETECTED_OS}" ]; then
+		echo "${_DETECTED_OS}"
+		return 0
+	fi
+
 	case "$(uname -s)" in
 		Linux*)               _DETECTED_OS="linux" ;;
 		FreeBSD*)             _DETECTED_OS="freebsd" ;;
@@ -14,6 +65,7 @@ _detect_os() {
 		MINGW*|CYGWIN*|MSYS*) _DETECTED_OS="windows" ;;
 		*)                    _DETECTED_OS="unknown" ;;
 	esac
+	_cache_write "os" "${_DETECTED_OS}"
 	echo "${_DETECTED_OS}"
 }
 
@@ -76,6 +128,12 @@ _detect_shell() {
 ### --------------------------------
 _detect_distro() {
 	[ -n "${_DETECTED_DISTRO:-}" ] && echo "${_DETECTED_DISTRO}" && return 0
+	_DETECTED_DISTRO="$(_cache_read "distro")"
+	if [ -n "${_DETECTED_DISTRO}" ]; then
+		echo "${_DETECTED_DISTRO}"
+		return 0
+	fi
+
 	if [ -f "/etc/os-release" ]; then
 		local _id="$(. /etc/os-release && echo "${ID}")"
 		_DETECTED_DISTRO="${_id:-unknown}"
@@ -86,6 +144,7 @@ _detect_distro() {
 	else
 		_DETECTED_DISTRO="unknown"
 	fi
+	_cache_write "distro" "${_DETECTED_DISTRO}"
 	echo "${_DETECTED_DISTRO}"
 }
 
@@ -94,6 +153,12 @@ _detect_distro() {
 ### --------------------------------
 _detect_distro_family() {
 	[ -n "${_DETECTED_DISTRO_FAMILY:-}" ] && echo "${_DETECTED_DISTRO_FAMILY}" && return 0
+	_DETECTED_DISTRO_FAMILY="$(_cache_read "distro_family")"
+	if [ -n "${_DETECTED_DISTRO_FAMILY}" ]; then
+		echo "${_DETECTED_DISTRO_FAMILY}"
+		return 0
+	fi
+
 	local _id="$(_detect_distro)"
 	local _like=""
 	[ -f "/etc/os-release" ] && _like="$(. /etc/os-release && echo "${ID_LIKE}")"
@@ -118,6 +183,7 @@ _detect_distro_family() {
 			esac
 			;;
 	esac
+	_cache_write "distro_family" "${_DETECTED_DISTRO_FAMILY}"
 	echo "${_DETECTED_DISTRO_FAMILY}"
 }
 
@@ -126,6 +192,12 @@ _detect_distro_family() {
 ### --------------------------------
 _detect_desktop_environment() {
 	[ -n "${_DETECTED_DESKTOP_ENV:-}" ] && echo "${_DETECTED_DESKTOP_ENV}" && return 0
+	_DETECTED_DESKTOP_ENV="$(_cache_read "desktop_env")"
+	if [ -n "${_DETECTED_DESKTOP_ENV}" ]; then
+		echo "${_DETECTED_DESKTOP_ENV}"
+		return 0
+	fi
+
 	local _desktop="${XDG_CURRENT_DESKTOP:-${DESKTOP_SESSION}}"
 	case "${_desktop}" in
 		*[Kk][Dd][Ee]*|*[Pp]lasma*)                                            _DETECTED_DESKTOP_ENV="kde" ;;
@@ -140,6 +212,7 @@ _detect_desktop_environment() {
 		*[Ii]3*|*[Bb][Ss][Pp][Ww][Mm]*|*[Rr][Ii][Vv][Ee][Rr]*|*[Dd][Ww][Mm]*) _DETECTED_DESKTOP_ENV="wm" ;;
 		*)                                                                     _DETECTED_DESKTOP_ENV="unknown" ;;
 	esac
+	_cache_write "desktop_env" "${_DETECTED_DESKTOP_ENV}"
 	echo "${_DETECTED_DESKTOP_ENV}"
 }
 
@@ -148,14 +221,10 @@ _detect_desktop_environment() {
 ### --------------------------------
 _detect_color_scheme() {
 	[ -n "${_DETECTED_COLOR_SCHEME:-}" ] && echo "${_DETECTED_COLOR_SCHEME}" && return 0
-
-	local _cache="${XDG_RUNTIME_DIR:-/tmp}/.shell_color_scheme"
-	if [ -f "${_cache}" ]; then
-		read -r _DETECTED_COLOR_SCHEME < "${_cache}" 2> "/dev/null"
-		if [ -n "${_DETECTED_COLOR_SCHEME:-}" ]; then
-			echo "${_DETECTED_COLOR_SCHEME}"
-			return 0
-		fi
+	_DETECTED_COLOR_SCHEME="$(_cache_read "color_scheme")"
+	if [ -n "${_DETECTED_COLOR_SCHEME}" ]; then
+		echo "${_DETECTED_COLOR_SCHEME}"
+		return 0
 	fi
 
 	_DETECTED_COLOR_SCHEME="dark"
@@ -198,7 +267,7 @@ _detect_color_scheme() {
 		fi
 	fi
 
-	[ -d "${XDG_RUNTIME_DIR:-/tmp}" ] && echo "${_DETECTED_COLOR_SCHEME}" > "${_cache}" 2> "/dev/null" || true
+	_cache_write "color_scheme" "${_DETECTED_COLOR_SCHEME}"
 	echo "${_DETECTED_COLOR_SCHEME}"
 }
 
@@ -206,88 +275,115 @@ _detect_color_scheme() {
 ### Detect GTK Theme
 ### --------------------------------
 _detect_gtk_theme() {
+	[ -n "${_DETECTED_GTK_THEME:-}" ] && echo "${_DETECTED_GTK_THEME}" && return 0
+	_DETECTED_GTK_THEME="$(_cache_read "gtk_theme")"
+	if [ -n "${_DETECTED_GTK_THEME}" ]; then
+		echo "${_DETECTED_GTK_THEME}"
+		return 0
+	fi
+
 	local _desktop_env="$(_detect_desktop_environment)"
 	local _color_scheme="$(_detect_color_scheme)"
 
 	case "${_desktop_env}" in
 		kde)
 			if [ "${_color_scheme}" = "dark" ]; then
-				echo "Breeze-Dark"
+				_DETECTED_GTK_THEME="Breeze-Dark"
 			else
-				echo "Breeze"
+				_DETECTED_GTK_THEME="Breeze"
 			fi
 			;;
 		gnome)
-			echo ""
+			_DETECTED_GTK_THEME=""
 			;;
 		*)
 			if [ "${_color_scheme}" = "dark" ]; then
 				if [ -d "/usr/share/themes/adw-gtk3-dark" ] || [ -d "${HOME}/.themes/adw-gtk3-dark" ]; then
-					echo "adw-gtk3-dark"
+					_DETECTED_GTK_THEME="adw-gtk3-dark"
 				else
-					echo "Adwaita:dark"
+					_DETECTED_GTK_THEME="Adwaita:dark"
 				fi
 			else
 				if [ -d "/usr/share/themes/adw-gtk3" ] || [ -d "${HOME}/.themes/adw-gtk3" ]; then
-					echo "adw-gtk3"
+					_DETECTED_GTK_THEME="adw-gtk3"
 				else
-					echo "Adwaita"
+					_DETECTED_GTK_THEME="Adwaita"
 				fi
 			fi
 			;;
 	esac
+	_cache_write "gtk_theme" "${_DETECTED_GTK_THEME}"
+	echo "${_DETECTED_GTK_THEME}"
 }
 
 ### --------------------------------
 ### Detect Qt Theme
 ### --------------------------------
 _detect_qt_theme() {
+	[ -n "${_DETECTED_QT_THEME:-}" ] && echo "${_DETECTED_QT_THEME}" && return 0
+	_DETECTED_QT_THEME="$(_cache_read "qt_theme")"
+	if [ -n "${_DETECTED_QT_THEME}" ]; then
+		echo "${_DETECTED_QT_THEME}"
+		return 0
+	fi
+
 	local _desktop_env="$(_detect_desktop_environment)"
 	local _color_scheme="$(_detect_color_scheme)"
 
 	if [ "${_desktop_env}" = "kde" ]; then
 		if [ "${_color_scheme}" = "dark" ]; then
-			echo "Breeze-Dark"
+			_DETECTED_QT_THEME="Breeze-Dark"
 		else
-			echo "Breeze"
+			_DETECTED_QT_THEME="Breeze"
 		fi
 	else
-		echo ""
+		_DETECTED_QT_THEME=""
 	fi
+	_cache_write "qt_theme" "${_DETECTED_QT_THEME}"
+	echo "${_DETECTED_QT_THEME}"
 }
 
 ### --------------------------------
 ### Detect Qt Platform Theme
 ### --------------------------------
 _detect_qt_platform_theme() {
+	[ -n "${_DETECTED_QT_PLATFORM_THEME:-}" ] && echo "${_DETECTED_QT_PLATFORM_THEME}" && return 0
+	_DETECTED_QT_PLATFORM_THEME="$(_cache_read "qt_platform_theme")"
+	if [ -n "${_DETECTED_QT_PLATFORM_THEME}" ]; then
+		echo "${_DETECTED_QT_PLATFORM_THEME}"
+		return 0
+	fi
+
 	local _desktop_env="$(_detect_desktop_environment)"
 
 	case "${_desktop_env}" in
 		kde)
-			echo "xdgdesktopportal"
+			_DETECTED_QT_PLATFORM_THEME="xdgdesktopportal"
 			;;
 		gnome|sway|hyprland)
 			if command -v qt6ct > "/dev/null" 2>&1; then
-				echo "qt6ct"
+				_DETECTED_QT_PLATFORM_THEME="qt6ct"
 			elif command -v qt5ct > "/dev/null" 2>&1; then
-				echo "qt5ct"
+				_DETECTED_QT_PLATFORM_THEME="qt5ct"
 			else
-				echo "xdgdesktopportal"
+				_DETECTED_QT_PLATFORM_THEME="xdgdesktopportal"
 			fi
 			;;
 		xfce|mate|cinnamon)
-			echo "gtk3"
+			_DETECTED_QT_PLATFORM_THEME="gtk3"
 			;;
 		*)
 			if command -v qt6ct > "/dev/null" 2>&1; then
-				echo "qt6ct"
+				_DETECTED_QT_PLATFORM_THEME="qt6ct"
 			elif command -v qt5ct > "/dev/null" 2>&1; then
-				echo "qt5ct"
+				_DETECTED_QT_PLATFORM_THEME="qt5ct"
 			else
-				echo ""
+				_DETECTED_QT_PLATFORM_THEME=""
 			fi
 			;;
 	esac
+	_cache_write "qt_platform_theme" "${_DETECTED_QT_PLATFORM_THEME}"
+	echo "${_DETECTED_QT_PLATFORM_THEME}"
 }
 
 ### --------------------------------
@@ -295,6 +391,12 @@ _detect_qt_platform_theme() {
 ### --------------------------------
 _detect_eza() {
 	[ -n "${_DETECTED_EZA:-}" ] && echo "${_DETECTED_EZA}" && return 0
+	_DETECTED_EZA="$(_cache_read "eza")"
+	if [ -n "${_DETECTED_EZA}" ]; then
+		echo "${_DETECTED_EZA}"
+		return 0
+	fi
+
 	if command -v eza > "/dev/null" 2>&1; then
 		_DETECTED_EZA="eza"
 	elif command -v exa > "/dev/null" 2>&1; then
@@ -306,6 +408,7 @@ _detect_eza() {
 	else
 		_DETECTED_EZA=""
 	fi
+	_cache_write "eza" "${_DETECTED_EZA}"
 	echo "${_DETECTED_EZA}"
 }
 
@@ -314,6 +417,12 @@ _detect_eza() {
 ### --------------------------------
 _detect_bat() {
 	[ -n "${_DETECTED_BAT:-}" ] && echo "${_DETECTED_BAT}" && return 0
+	_DETECTED_BAT="$(_cache_read "bat")"
+	if [ -n "${_DETECTED_BAT}" ]; then
+		echo "${_DETECTED_BAT}"
+		return 0
+	fi
+
 	if command -v bat > "/dev/null" 2>&1; then
 		_DETECTED_BAT="bat"
 	elif command -v batcat > "/dev/null" 2>&1; then
@@ -323,6 +432,7 @@ _detect_bat() {
 	else
 		_DETECTED_BAT=""
 	fi
+	_cache_write "bat" "${_DETECTED_BAT}"
 	echo "${_DETECTED_BAT}"
 }
 
@@ -331,6 +441,12 @@ _detect_bat() {
 ### --------------------------------
 _detect_rg() {
 	[ -n "${_DETECTED_RG:-}" ] && echo "${_DETECTED_RG}" && return 0
+	_DETECTED_RG="$(_cache_read "rg")"
+	if [ -n "${_DETECTED_RG}" ]; then
+		echo "${_DETECTED_RG}"
+		return 0
+	fi
+
 	if command -v rg > "/dev/null" 2>&1; then
 		_DETECTED_RG="rg"
 	elif command -v ripgrep > "/dev/null" 2>&1; then
@@ -340,6 +456,7 @@ _detect_rg() {
 	else
 		_DETECTED_RG=""
 	fi
+	_cache_write "rg" "${_DETECTED_RG}"
 	echo "${_DETECTED_RG}"
 }
 
@@ -348,6 +465,12 @@ _detect_rg() {
 ### --------------------------------
 _detect_fd() {
 	[ -n "${_DETECTED_FD:-}" ] && echo "${_DETECTED_FD}" && return 0
+	_DETECTED_FD="$(_cache_read "fd")"
+	if [ -n "${_DETECTED_FD}" ]; then
+		echo "${_DETECTED_FD}"
+		return 0
+	fi
+
 	if command -v fd > "/dev/null" 2>&1; then
 		_DETECTED_FD="fd"
 	elif command -v fdfind > "/dev/null" 2>&1; then
@@ -359,6 +482,7 @@ _detect_fd() {
 	else
 		_DETECTED_FD=""
 	fi
+	_cache_write "fd" "${_DETECTED_FD}"
 	echo "${_DETECTED_FD}"
 }
 
@@ -366,13 +490,24 @@ _detect_fd() {
 ### Detect Privilege Escalator
 ### --------------------------------
 _detect_privilege_escalator() {
-	if [ "$(id -u)" -eq 0 ]; then
-		echo "root"
-	elif command -v doas > "/dev/null" 2>&1; then
-		echo "doas"
-	elif command -v sudo > "/dev/null" 2>&1; then
-		echo "sudo"
+	[ -n "${_DETECTED_ESCALATOR:-}" ] && echo "${_DETECTED_ESCALATOR}" && return 0
+	_DETECTED_ESCALATOR="$(_cache_read "escalator")"
+	if [ -n "${_DETECTED_ESCALATOR}" ]; then
+		echo "${_DETECTED_ESCALATOR}"
+		return 0
 	fi
+
+	if [ "$(id -u)" -eq 0 ]; then
+		_DETECTED_ESCALATOR="root"
+	elif command -v doas > "/dev/null" 2>&1; then
+		_DETECTED_ESCALATOR="doas"
+	elif command -v sudo > "/dev/null" 2>&1; then
+		_DETECTED_ESCALATOR="sudo"
+	else
+		_DETECTED_ESCALATOR=""
+	fi
+	_cache_write "escalator" "${_DETECTED_ESCALATOR}"
+	echo "${_DETECTED_ESCALATOR}"
 }
 
 ### --------------------------------
@@ -394,6 +529,13 @@ _is_raw_tty() {
 ### --------------------------------
 _detect_kernel_release() {
 	[ -n "${_DETECTED_KERNEL_RELEASE:-}" ] && echo "${_DETECTED_KERNEL_RELEASE}" && return 0
+	_DETECTED_KERNEL_RELEASE="$(_cache_read "kernel_release")"
+	if [ -n "${_DETECTED_KERNEL_RELEASE}" ]; then
+		echo "${_DETECTED_KERNEL_RELEASE}"
+		return 0
+	fi
+
 	_DETECTED_KERNEL_RELEASE="$(uname -r)"
+	_cache_write "kernel_release" "${_DETECTED_KERNEL_RELEASE}"
 	echo "${_DETECTED_KERNEL_RELEASE}"
 }

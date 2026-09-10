@@ -45,7 +45,7 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 
 > _Projete para a simplicidade; adicione complexidade apenas onde estritamente necessário._
 
-- Evitamos intencionalmente frameworks monolíticos e lentos (como Oh-My-Zsh padrão com 50 plugins ativados). O Universal Shell provê uma base enxuta, leve e rápida feita à mão, que inicializa em milissegundos.
+- Evitamos intencionalmente frameworks monolíticos e lentos (como Oh-My-Zsh padrão com 50 plugins ativados). O Universal Shell provê uma base enxuta, leve e rápida feita à mão, que inicializa em milissegundos. Por padrão, a instalação é 100% pura (Pure Mode sem frameworks externos), gerando arquivos base (`.bashrc`, `.zshrc`) otimizados e tratando frameworks Oh-My-* como opcionais ativados unicamente por flag explícita (`--framework`).
 
 ### 6. Regra da Parcimônia (_Rule of Parsimony_)
 
@@ -77,6 +77,13 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
         }
         ```
     - **Padrão de Erro Zone B:** Funções que falharem na validação runtime devem emitir mensagem no `stderr` (`>&2`) e retornar código `127` (_command not found_ padrão POSIX).
+- **Motor de Cache em Dois Níveis para Inspeção (`_detect_*`):**
+    - Todas as funções de inspeção (`_detect_*`) em `library/detect.sh` realizam meramente a leitura de dados e características do ambiente (ex: SO, shell, distro, desktop environment, color scheme, temas GTK/Qt, binários e escalador de privilégios `doas`/`sudo`/`root`).
+    - Para atingir a meta funcional de boot instantâneo (< 32ms), eliminar forks desnecessários (`uname`, `ps`) e evitar chamadas IPC D-Bus custosas (`gdbus`), toda função de detecção/leitura DEVE utilizar o contrato de cache em dois níveis:
+        1. **Tier 1 (In-Memory Cache):** Variável privada `_DETECTED_<NOME>` em memória. Se preenchida, retorna imediatamente no mesmo processo (`return 0`, custo ~0.001ms).
+        2. **Tier 2 (Runtime tmpfs Cache):** Leitura de arquivo em RAM disk (`${XDG_RUNTIME_DIR:-/tmp}/.universal_shell_cache_${USER}`) via helper `_cache_read "<chave>"`. Custo ~0.05ms com builtin `read -r`.
+        3. **Gravação Automática:** Se o dado não estiver em nenhum dos níveis, a função computa a regra, armazena em memória e persiste via `_cache_write "<chave>" "${_val}"`.
+    - **Invalidação Determinística (`_cache_clean` / `clean-cache`):** O cache em tmpfs e memória é invalidado automaticamente em `install.sh`, `reinstall-shell` (`resh`), `update-shell` (`upsh`) ou sob demanda pelo usuário via comando `clean-cache` (`ccache`), garantindo consistência imediata ao atualizar pacotes, temas ou binários.
 - **Degradação Graciosa:** Se o `Vault` não estiver instalado ou montado na máquina, o Shell funciona perfeitamente em modo anônimo, sem travar nem exibir mensagens de erro assustadoras.
 
 ### 9. Regra da Representação (_Rule of Representation_)
@@ -143,6 +150,7 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 > _Honre a escolha explícita e deliberada do usuário antes de impor padrões genéricos._
 
 - **Cascata de Preferência Consciente:** Ferramentas modernas e minimalistas instaladas ativamente pelo usuário têm prioridade de execução sobre padrões legados em atalhos interativos (ex: `doas > sudo`, `paru > yay`, `nvim/hx/micro > nano`, `eza > exa > ls`, `rg > grep`, `bat > cat`, `fd > find`), com detecção inteligente de consoles TTY brutos para evitar poluição visual de ícones.
+- **Ambiente Puro por Padrão (Pure by Default):** O Universal Shell respeita a máquina e não baixa dezenas de megabytes de repositórios externos de terceiros sem autorização deliberada. O padrão de instalação é puro (`SHELL_FRAMEWORK=0`), inicializando o terminal em meros milissegundos com templates standalone impecavelmente formatados. Frameworks de terceiros são puramente opcionais (`--framework` / `--oh-my-shell`).
 - **Não-Invasividade:** O Shell nunca sobrescreve variáveis de ambiente previamente definidas pelo usuário (`$EDITOR`, `$VISUAL`, `$PAGER`, `$FILEMANAGER`), utilizando sempre o padrão defensivo `${VAR:-default}` ou verificando se a variável já está preenchida (`[ -z "${VAR}" ]`).
 - **Compatibilidade Transparente:** Quando uma ferramenta preferida substituir outra, prover mapeamentos/aliases bidirecionais para que hábitos de digitação não quebrem o fluxo diário de trabalho.
 

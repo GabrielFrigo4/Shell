@@ -257,6 +257,8 @@ alias upall="update-all"
 alias upsys="update-system"
 alias upsh="update-shell"
 alias resh="reinstall-shell"
+alias ccache="clean-cache"
+alias cleancache="clean-cache"
 alias upwf="update-wifi"
 alias upnet="update-network"
 

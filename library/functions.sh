@@ -68,6 +68,16 @@ path-dedup() {
 }
 
 ### --------------------------------
+### Clean Cache
+### --------------------------------
+clean-cache() {
+	_cache_clean
+	echo "🧹 Universal Shell cache cleared."
+}
+alias cleancache="clean-cache"
+alias ccache="clean-cache"
+
+### --------------------------------
 ### Update Shell
 ### --------------------------------
 update-shell() {
@@ -82,6 +92,7 @@ update-shell() {
 			echo "🔄 Updating Oh-My-Zsh..."
 			command git -C "${ZSH:-${HOME}/.oh-my-zsh}" pull --ff-only 2> "/dev/null" || true
 		fi
+		_cache_clean
 		echo "♻️ Reloading shell environment..."
 		. "${HOME}/.$(_detect_shell)rc" 2> "/dev/null" || true
 	else
@@ -106,9 +117,11 @@ reinstall-shell() {
 		return 1
 	}
 
+	_cache_clean
+
 	local _args="--context ${SHELL_CONTEXT:-desktop}"
-	if [ "${SHELL_PURE:-0}" -eq 1 ]; then
-		_args="${_args} --pure"
+	if [ "${SHELL_FRAMEWORK:-0}" -eq 1 ]; then
+		_args="${_args} --framework"
 	fi
 
 	echo "🔧 Re-running install.sh with context '${SHELL_CONTEXT:-desktop}'..."

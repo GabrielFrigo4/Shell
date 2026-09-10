@@ -10,7 +10,7 @@ SHELL_REPO_DIR="$(cd "$(dirname "${0}")" && pwd)"
 ### --------------------------------
 SHELL_CONTEXT="${SHELL_CONTEXT:-desktop}"
 SHELL_TARGET="${SHELL_TARGET:-all}"
-SHELL_PURE="${SHELL_PURE:-0}"
+SHELL_FRAMEWORK="${SHELL_FRAMEWORK:-0}"
 
 for arg in "$@"; do
 	case "${arg}" in
@@ -18,8 +18,8 @@ for arg in "$@"; do
 		-c=*)        SHELL_CONTEXT="${arg#*=}" ;;
 		--shell=*)   SHELL_TARGET="${arg#*=}" ;;
 		-s=*)        SHELL_TARGET="${arg#*=}" ;;
-		--pure|--no-framework) SHELL_PURE=1 ;;
-		--framework|--no-pure) SHELL_PURE=0 ;;
+		--framework|--with-framework|--oh-my-shell|--ohmysh|--omz|--omb) SHELL_FRAMEWORK=1 ;;
+		--pure|--no-framework) SHELL_FRAMEWORK=0 ;;
 	esac
 done
 
@@ -65,6 +65,7 @@ esac
 ### --------------------------------
 . "${SHELL_REPO_DIR}/library/detect.sh"
 . "${SHELL_REPO_DIR}/library/functions.sh"
+_cache_clean
 OS_NAME="$(_detect_os)"
 SHELL_NAME="$(_detect_shell)"
 
@@ -110,8 +111,10 @@ echo "Detected OS:     ${OS_NAME}"
 echo "Current shell:   ${SHELL_NAME}"
 echo "Target shell(s): ${TARGET_SHELLS}"
 echo "Context:         ${SHELL_CONTEXT}"
-if [ "${SHELL_PURE}" -eq 1 ]; then
-	echo "Mode:            pure (no frameworks)"
+if [ "${SHELL_FRAMEWORK}" -eq 1 ]; then
+	echo "Mode:            framework (Oh-My-Bash / Oh-My-Zsh enabled)"
+else
+	echo "Mode:            pure (standalone native templates, zero overhead)"
 fi
 
 ### --------------------------------
@@ -259,7 +262,7 @@ _install_shell_target() {
 		_as_root rm -f "${_root_rc_file}"
 	fi
 
-	if [ "${SHELL_PURE}" -eq 1 ]; then
+	if [ "${SHELL_FRAMEWORK}" -eq 0 ]; then
 		case "${_target_shell}" in
 			bash) _generate_bashrc_pure > "${_rc_file}" ;;
 			zsh)  _generate_zshrc_pure > "${_rc_file}" ;;
@@ -350,7 +353,7 @@ _install_shell_target() {
 	local _source_line="${_source_cmd} \"\${SHELL_REPO_DIR}/target/${OS_NAME}/${_target_shell}/prompt.sh\""
 	local _setup_block
 
-	if [ "${SHELL_PURE}" -eq 1 ]; then
+	if [ "${SHELL_FRAMEWORK}" -eq 1 ]; then
 		_setup_block="$(cat << EOF
 
 ### ================================
@@ -358,7 +361,7 @@ _install_shell_target() {
 ### ================================
 ${_repo_dir_line}
 ${_context_line}
-export SHELL_PURE=1
+export SHELL_FRAMEWORK=1
 
 for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
 for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
@@ -375,6 +378,8 @@ EOF
 ### ================================
 ${_repo_dir_line}
 ${_context_line}
+export SHELL_FRAMEWORK=0
+export SHELL_PURE=1
 
 for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
 for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
