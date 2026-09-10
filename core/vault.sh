@@ -12,8 +12,11 @@ VAULT_DIR="${VAULT_DIR:-${HOME}/.vault}"
 ### --------------------------------
 ### SSH Keys
 ### --------------------------------
-if [ -S "${SSH_AUTH_SOCK}" ] && ! ssh-add -l > "/dev/null" 2>&1; then
-	command -v vault-keys > "/dev/null" 2>&1 && vault-keys > "/dev/null" 2>&1
+if [ -n "${SSH_AUTH_SOCK}" ] && [ -S "${SSH_AUTH_SOCK}" ] && [ -z "${SSH_AUTH_CHECKED:-}" ]; then
+	if ! ssh-add -l > "/dev/null" 2>&1; then
+		command -v vault-keys > "/dev/null" 2>&1 && vault-keys > "/dev/null" 2>&1
+	fi
+	export SSH_AUTH_CHECKED=1
 fi
 
 ### --------------------------------

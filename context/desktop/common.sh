@@ -341,29 +341,29 @@ fi
 ### GUI Integration
 ### --------------------------------
 if [ -n "${DISPLAY}" ] || [ -n "${WAYLAND_DISPLAY}" ]; then
-	_gtk_theme="$(_detect_gtk_theme)"
-	if [ -n "${_gtk_theme}" ]; then
-		export GTK_THEME="${_gtk_theme}"
-	else
-		unset GTK_THEME
+	if [ -z "${GTK_THEME:-}" ]; then
+		_gtk_theme="$(_detect_gtk_theme)"
+		if [ -n "${_gtk_theme}" ]; then
+			export GTK_THEME="${_gtk_theme}"
+		fi
+		unset _gtk_theme
 	fi
-	unset _gtk_theme
 
-	_qt_style="$(_detect_qt_theme)"
-	if [ -n "${_qt_style}" ]; then
-		export QT_STYLE_OVERRIDE="${_qt_style}"
-	else
-		unset QT_STYLE_OVERRIDE
+	if [ -z "${QT_STYLE_OVERRIDE:-}" ]; then
+		_qt_style="$(_detect_qt_theme)"
+		if [ -n "${_qt_style}" ]; then
+			export QT_STYLE_OVERRIDE="${_qt_style}"
+		fi
+		unset _qt_style
 	fi
-	unset _qt_style
 
-	_qt_platform="$(_detect_qt_platform_theme)"
-	if [ -n "${_qt_platform}" ]; then
-		export QT_QPA_PLATFORMTHEME="${_qt_platform}"
-	else
-		unset QT_QPA_PLATFORMTHEME
+	if [ -z "${QT_QPA_PLATFORMTHEME:-}" ]; then
+		_qt_platform="$(_detect_qt_platform_theme)"
+		if [ -n "${_qt_platform}" ]; then
+			export QT_QPA_PLATFORMTHEME="${_qt_platform}"
+		fi
+		unset _qt_platform
 	fi
-	unset _qt_platform
 
 	export ELECTRON_OZONE_PLATFORM_HINT="auto"
 	export _JAVA_AWT_WM_NONREPARENTING=1

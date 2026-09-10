@@ -58,8 +58,8 @@ Diagnóstico detalhado e plano de ação estruturado com base no profiling em te
 3. **Oh-My-Bash otimizado (~100ms):**
     - **Solução:** Plugins e completions enxutos (`completions=(git ssh)`, `aliases=(general)`, `plugins=(bashmarks)`) no template `~/.bashrc`.
 
-4. **Modo Universal Shell Puro (Zero Overhead):**
-    - **Solução:** Flag `--pure` / `--no-framework` no `install.sh` que pula instalação/sourcing dos frameworks Oh-My-*, garantindo boot interativo em **~18ms a 22ms** (100% VERDE).
+4. **Modo Universal Shell Puro (Zero Overhead & Templates Standalone):**
+    - **Solução:** Suporte à flag `--pure` / `--no-framework` no `install.sh` e `reinstall-shell` (`resh`) com propagação via `SHELL_PURE=1`. Gera arquivos base elegantes e limpos para `~/.bashrc` e `~/.zshrc` (guards de interatividade, opções de histórico, completamentos nativos e compinit compilado) sem depender de frameworks externos, integrando cache em memória (`_DETECTED_*`) e fast-path em tmpfs (`$XDG_RUNTIME_DIR/.shell_color_scheme`).
 
 #### 📋 Itens Concluídos
 

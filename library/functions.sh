@@ -45,7 +45,25 @@ path-back() {
 ### Path Dedup
 ### --------------------------------
 path-dedup() {
-	PATH=$(command printf "%s" "${PATH}" | command awk -v RS=: -v ORS=: '!a[$0]++' | command sed 's/:$//')
+	local _old_ifs="${IFS}"
+	local _new_path=""
+	local _dir
+	IFS=":"
+	for _dir in ${PATH}; do
+		[ -z "${_dir}" ] && continue
+		case ":${_new_path}:" in
+			*":${_dir}:"*) ;;
+			*)
+				if [ -z "${_new_path}" ]; then
+					_new_path="${_dir}"
+				else
+					_new_path="${_new_path}:${_dir}"
+				fi
+				;;
+		esac
+	done
+	IFS="${_old_ifs}"
+	PATH="${_new_path}"
 	export PATH
 }
 
@@ -88,8 +106,13 @@ reinstall-shell() {
 		return 1
 	}
 
+	local _args="--context ${SHELL_CONTEXT:-desktop}"
+	if [ "${SHELL_PURE:-0}" -eq 1 ]; then
+		_args="${_args} --pure"
+	fi
+
 	echo "🔧 Re-running install.sh with context '${SHELL_CONTEXT:-desktop}'..."
-	"$(command -v "$(_detect_shell)" 2> "/dev/null")" "${SHELL_REPO_DIR}/install.sh" --context "${SHELL_CONTEXT:-desktop}"
+	"$(command -v "$(_detect_shell)" 2> "/dev/null")" "${SHELL_REPO_DIR}/install.sh" ${_args} "$@"
 
 	echo "♻️ Reloading shell environment..."
 	. "${HOME}/.$(_detect_shell)rc" 2> "/dev/null" || true

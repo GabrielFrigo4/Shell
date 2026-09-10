@@ -4,7 +4,7 @@
 
 PROMPT_OS_ICON=" "
 PROMPT_OS_COLOR="blue"
-PROMPT_OS_NAME="$(uname -r)"
+[ -z "${PROMPT_OS_NAME:-}" ] && export PROMPT_OS_NAME="$(_detect_kernel_release)"
 
 . "${SHELL_REPO_DIR}/theme/zsh.sh"
 . "${SHELL_REPO_DIR}/target/linux/environment.sh"

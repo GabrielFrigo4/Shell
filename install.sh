@@ -10,7 +10,7 @@ SHELL_REPO_DIR="$(cd "$(dirname "${0}")" && pwd)"
 ### --------------------------------
 SHELL_CONTEXT="${SHELL_CONTEXT:-desktop}"
 SHELL_TARGET="${SHELL_TARGET:-all}"
-SHELL_PURE=0
+SHELL_PURE="${SHELL_PURE:-0}"
 
 for arg in "$@"; do
 	case "${arg}" in
@@ -19,6 +19,7 @@ for arg in "$@"; do
 		--shell=*)   SHELL_TARGET="${arg#*=}" ;;
 		-s=*)        SHELL_TARGET="${arg#*=}" ;;
 		--pure|--no-framework) SHELL_PURE=1 ;;
+		--framework|--no-pure) SHELL_PURE=0 ;;
 	esac
 done
 
@@ -129,6 +130,108 @@ if [ -d "${SHELL_REPO_DIR}/.git" ] && command -v git > "/dev/null" 2>&1; then
 fi
 
 ### --------------------------------
+### Standalone Base Templates
+### --------------------------------
+_generate_bashrc_pure() {
+	cat << 'EOF'
+### ================================
+### BASH CONFIGURATION
+### ================================
+
+### --------------------------------
+### Interactive Guard
+### --------------------------------
+case "$-" in
+	*i*) ;;
+	*) return ;;
+esac
+
+### --------------------------------
+### Shell Options & History
+### --------------------------------
+HISTCONTROL=ignoreboth
+HISTSIZE=10000
+HISTFILESIZE=20000
+
+shopt -s histappend
+shopt -s checkwinsize
+
+### --------------------------------
+### System Completions
+### --------------------------------
+if ! shopt -oq posix; then
+	if [ -f "/usr/share/bash-completion/bash_completion" ]; then
+		. "/usr/share/bash-completion/bash_completion"
+	elif [ -f "/etc/bash_completion" ]; then
+		. "/etc/bash_completion"
+	fi
+fi
+EOF
+}
+
+_generate_zshrc_pure() {
+	cat << 'EOF'
+### ================================
+### ZSH CONFIGURATION
+### ================================
+
+### --------------------------------
+### Interactive Guard
+### --------------------------------
+case "$-" in
+	*i*) ;;
+	*) return ;;
+esac
+
+### --------------------------------
+### Shell Options & History
+### --------------------------------
+HISTSIZE=10000
+SAVEHIST=20000
+HISTFILE="${HOME}/.zsh_history"
+
+setopt APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_REDUCE_BLANKS
+setopt AUTO_CD
+
+### --------------------------------
+### Completion Engine
+### --------------------------------
+autoload -Uz compinit
+if [ -f "${HOME}/.zcompdump" ]; then
+	compinit -C -d "${HOME}/.zcompdump"
+else
+	compinit -d "${HOME}/.zcompdump"
+fi
+[ -f "${HOME}/.zcompdump.zwc" ] || (zcompile "${HOME}/.zcompdump" 2> "/dev/null" &)
+EOF
+}
+
+_generate_shrc_pure() {
+	cat << 'EOF'
+### ================================
+### POSIX SH CONFIGURATION
+### ================================
+
+### --------------------------------
+### Interactive Guard
+### --------------------------------
+case "$-" in
+	*i*) ;;
+	*) return ;;
+esac
+
+### --------------------------------
+### Shell History
+### --------------------------------
+HISTSIZE=5000
+EOF
+}
+
+### --------------------------------
 ### Target Shell Installer
 ### --------------------------------
 _install_shell_target() {
@@ -156,7 +259,20 @@ _install_shell_target() {
 		_as_root rm -f "${_root_rc_file}"
 	fi
 
-	if [ "${SHELL_PURE}" -eq 0 ]; then
+	if [ "${SHELL_PURE}" -eq 1 ]; then
+		case "${_target_shell}" in
+			bash) _generate_bashrc_pure > "${_rc_file}" ;;
+			zsh)  _generate_zshrc_pure > "${_rc_file}" ;;
+			sh)   _generate_shrc_pure > "${_rc_file}" ;;
+		esac
+		if [ "${OS_NAME}" != "windows" ]; then
+			case "${_target_shell}" in
+				bash) _generate_bashrc_pure | _as_root tee "${_root_rc_file}" > "/dev/null" ;;
+				zsh)  _generate_zshrc_pure | _as_root tee "${_root_rc_file}" > "/dev/null" ;;
+				sh)   _generate_shrc_pure | _as_root tee "${_root_rc_file}" > "/dev/null" ;;
+			esac
+		fi
+	else
 		case "${_target_shell}" in
 			zsh)
 				if command -v zsh > "/dev/null" 2>&1; then
@@ -232,7 +348,27 @@ _install_shell_target() {
 	local _repo_dir_line="export SHELL_REPO_DIR=\"${SHELL_REPO_DIR}\""
 	local _context_line="export SHELL_CONTEXT=\"${SHELL_CONTEXT}\""
 	local _source_line="${_source_cmd} \"\${SHELL_REPO_DIR}/target/${OS_NAME}/${_target_shell}/prompt.sh\""
-	local _setup_block="$(cat << EOF
+	local _setup_block
+
+	if [ "${SHELL_PURE}" -eq 1 ]; then
+		_setup_block="$(cat << EOF
+
+### ================================
+### Shell Environment Setup
+### ================================
+${_repo_dir_line}
+${_context_line}
+export SHELL_PURE=1
+
+for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+unset _f
+
+${_source_line}
+EOF
+)"
+	else
+		_setup_block="$(cat << EOF
 
 ### ================================
 ### Shell Environment Setup
@@ -247,6 +383,7 @@ unset _f
 ${_source_line}
 EOF
 )"
+	fi
 
 	echo "Target RC file: ${_rc_file}"
 	if grep -qF "${_source_line}" "${_rc_file}" 2> "/dev/null"; then
