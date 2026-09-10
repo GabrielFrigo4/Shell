@@ -45,7 +45,8 @@ path-back() {
 ### Path Dedup
 ### --------------------------------
 path-dedup() {
-	local _old_ifs="${IFS}"
+	local _old_ifs="${IFS+x}"
+	local _saved_ifs="${IFS:-}"
 	local _new_path=""
 	local _dir
 	IFS=":"
@@ -62,7 +63,11 @@ path-dedup() {
 				;;
 		esac
 	done
-	IFS="${_old_ifs}"
+	if [ -n "${_old_ifs}" ]; then
+		IFS="${_saved_ifs}"
+	else
+		unset IFS
+	fi
 	PATH="${_new_path}"
 	export PATH
 }

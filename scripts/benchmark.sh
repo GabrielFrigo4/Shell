@@ -19,12 +19,13 @@ for _arg in "$@"; do
 	esac
 done
 
-_c_reset="\033[0m"
-_c_bold="\033[1m"
-_c_green="\033[32m"
-_c_yellow="\033[33m"
-_c_red="\033[31m"
-_c_cyan="\033[36m"
+_c_reset=$'\e[0m'
+_c_bold=$'\e[1m'
+_c_green=$'\e[32m'
+_c_yellow=$'\e[33m'
+_c_red=$'\e[31m'
+_c_cyan=$'\e[36m'
+
 
 printf "%b⚡ Shell Startup Latency Benchmark%b (iters: %s, standard: 2^n)\n\n" "${_c_bold}${_c_cyan}" "${_c_reset}" "${_iterations}"
 
