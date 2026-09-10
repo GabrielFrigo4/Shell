@@ -18,9 +18,9 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
 - O Shell é rigidamente dividido em:
     - `core/`: O ciclo de vida base e carregamento do ambiente.
     - `context/`: Especializações de acordo com a máquina (`desktop`, `server`, `container`, `wsl`).
-    - `target/`: Especializações de acordo com o sistema operacional (`linux`, `freebsd`, `windows`).
+    - `target/`: Especializações de acordo com o sistema operacional (`linux`, `freebsd`, `windows`) e configurações comuns de shell (`target/common/`).
     - `library/`: Funções utilitárias reutilizáveis.
-    - `theme/`: Renderização visual de prompts (Bash, Zsh, Sh).
+    - `theme/`: Renderização visual de prompts (Bash, Zsh, Sh), estritamente livre de opções de shell.
 
 ### 2. Regra da Clareza (_Rule of Clarity_)
 
