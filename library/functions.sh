@@ -381,16 +381,16 @@ update-snap() {
 update-system() {
 	echo "📦 Updating OS system packages..."
 	case "$(_detect_distro_family)" in
-		arch)   command -v update-pacman > "/dev/null" 2>&1 && update-pacman "$@" ;;
-		debian) command -v update-apt > "/dev/null" 2>&1 && update-apt "$@" ;;
-		fedora) command -v update-dnf > "/dev/null" 2>&1 && update-dnf "$@" ;;
-		suse)   command -v update-zypper > "/dev/null" 2>&1 && update-zypper "$@" ;;
-		void)   command -v update-xbps > "/dev/null" 2>&1 && update-xbps "$@" ;;
-		alpine) command -v update-apk > "/dev/null" 2>&1 && update-apk "$@" ;;
+		arch)   command -v pacman > "/dev/null" 2>&1 && update-pacman "$@" ;;
+		debian) command -v apt > "/dev/null" 2>&1 && update-apt "$@" ;;
+		fedora) command -v dnf > "/dev/null" 2>&1 && update-dnf "$@" ;;
+		suse)   command -v zypper > "/dev/null" 2>&1 && update-zypper "$@" ;;
+		void)   command -v xbps-install > "/dev/null" 2>&1 && update-xbps "$@" ;;
+		alpine) command -v apk > "/dev/null" 2>&1 && update-apk "$@" ;;
 		*)
 			case "$(_detect_os)" in
-				freebsd) command -v update-pkg > "/dev/null" 2>&1 && update-pkg "$@" ;;
-				windows) command -v update-pacman > "/dev/null" 2>&1 && update-pacman "$@" ;;
+				freebsd) command -v pkg > "/dev/null" 2>&1 && update-pkg "$@" ;;
+				windows) command -v pacman > "/dev/null" 2>&1 && update-pacman "$@" ;;
 			esac
 			;;
 	esac
@@ -405,19 +405,19 @@ update-all() {
 	echo ""
 	update-system "$@"
 
-	if command -v update-aur > "/dev/null" 2>&1; then
+	if command -v paru > "/dev/null" 2>&1 || command -v yay > "/dev/null" 2>&1; then
 		echo ""
 		echo "📦 Updating AUR packages..."
 		update-aur "$@" && echo "✅ AUR packages updated!"
 	fi
 
-	if command -v update-flatpak > "/dev/null" 2>&1; then
+	if command -v flatpak > "/dev/null" 2>&1; then
 		echo ""
 		echo "📦 Updating Flatpak packages..."
 		update-flatpak "$@" && echo "✅ Flatpak packages updated!"
 	fi
 
-	if command -v update-snap > "/dev/null" 2>&1; then
+	if command -v snap > "/dev/null" 2>&1; then
 		echo ""
 		echo "📦 Updating Snap packages..."
 		update-snap "$@" && echo "✅ Snap packages updated!"
