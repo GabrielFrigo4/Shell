@@ -11,6 +11,22 @@ _repo_dir="$(cd "$(dirname "${0}")/.." && pwd)"
 _vault_dir="${VAULT_DIR:-${_repo_dir}/../Vault}"
 [ ! -d "${_vault_dir}" ] && _vault_dir="${HOME}/.vault"
 
+case ":${PATH}:" in
+	*":/usr/local/bin:"*) ;;
+	*) PATH="/usr/local/bin:${PATH}"; export PATH ;;
+esac
+
+if ! command -v python3 > "/dev/null" 2>&1; then
+	echo "❌ ERRO: 'python3' não foi encontrado no PATH." >&2
+	echo "Instale o python3 para executar o benchmark (ex: pkg install python3)." >&2
+	exit 1
+fi
+
+if [ -f "${_repo_dir}/library/detect.sh" ]; then
+	. "${_repo_dir}/library/detect.sh"
+	_os="$(_detect_os)"
+fi
+
 _iterations=5
 for _arg in "$@"; do
 	case "${_arg}" in
@@ -122,3 +138,5 @@ if command -v zsh > "/dev/null" 2>&1; then
 		printf "%-24s %b\n" "Shell Stack (zsh)" "$(_format_ms "${_shell_zsh_ms}")"
 	fi
 fi
+
+printf "\n%b✨ Benchmark completed successfully.%b\n" "${_c_green}" "${_c_reset}"
