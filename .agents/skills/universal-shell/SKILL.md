@@ -66,6 +66,17 @@ Antes de escrever qualquer código, posicione-o na camada correta do ciclo de vi
     - No FreeBSD `/bin/sh` (`libedit`) e no Bash (`readline`), códigos ANSI dentro de `PS1` DEVEM estar estritamente contidos entre `\[` e `\]` (ex: `_c_red="\[\e[1;91m\]"`).
     - Sem `\[...\]`, a `libedit` computa bytes ANSI como colunas físicas ocupadas, quebrando a contagem de quebra de linha e causando sobreposição de caracteres (`\r`) e cursor travado sobre o início do prompt.
 
+6. **Heredocs Indentados com `cat <<- 'EOF'`:**
+    - Em geradores de templates e blocos multilinhas, use SEMPRE `cat <<- 'EOF'` (ou `cat <<- EOF`).
+    - O hífen `<<-` descarta TABs iniciais (`\t`) do corpo e do delimitador `EOF`, mantendo a indentação visual perfeita com o bloco circundante sem forçar texto para a coluna zero.
+7. **Taxonomia de Emissão (`echo` vs `printf` vs `echo -n`):**
+    - `echo`: Padrão para emissão de linhas simples de texto e escrita atômica em arquivos (`echo "${val}" >| "${file}"`).
+    - `echo -n $'\e...'`: Padrão canônico e preferido para sequências ANSI em terminais interativos (`[ -t 1 ]`).
+    - `printf`: Exclusivo para alinhamento de colunas e tabelas (`scripts/benchmark.sh`).
+8. **Guarda de Interatividade e Auto-Correção de `$SHELL`:**
+    - Todo RC gerado deve iniciar com `case "$-" in *i*) ;; *) return ;; esac`.
+    - Auto-correção de `$SHELL` deve usar casamento de padrão em memória (`case "${SHELL:-}" in *"/${_current_sh}") ;; ...`).
+
 ---
 
 ## 3. Procedimento para Criar um Novo Comando / Editor

@@ -222,6 +222,39 @@ Para garantir que o terminal permaneça instantâneo, extensível e agradável n
     - **Sem Parênteses ou Anotações Redundantes:** O título do bloco deve ser conciso e sem anotações secundárias entre parênteses (ex: prefira `### Default Editor` a `### Default Editor (Cascade)` e `### Update Vault` a `### Update Vault (update-vault)`).
     - **Regra da Não-Enumeração de Títulos:** Evite numerar títulos de seções e subseções (ex: prefira `### FreeBSD /bin/sh` a `### 1. FreeBSD /bin/sh`). A enumeração deve ser evitada em geral, sendo tolerada apenas quando a numeração for um requisito estritamente intrínseco à identidade, protocolo ou dependência direta do conceito (onde a omissão do número destruiria o significado do processo). Em qualquer outro caso, use sempre títulos puramente semânticos.
     - **Padronização em Workflows de CI/CD:** Scripts embutidos no CI/CD (`.github/workflows/ci.yml`) devem seguir rigorosamente este mesmo padrão estrutural, sendo estritamente vedado o uso de separadores arbitrários ou improvisados (como `echo "=== ... ==="`).
+15. **Heredocs Indentados com `cat <<- 'EOF'`:**
+    - Em blocos de geração de arquivos, templates ou textos multilinhas, use SEMPRE `cat <<- 'EOF'` (com hífen).
+    - O operador POSIX `<<-` descarta automaticamente todos os caracteres de tabulação inicial (`\t`) das linhas do conteúdo e da linha do delimitador `EOF`.
+    - Isso permite que todo o bloco heredoc e o delimitador `EOF` permaneçam perfeitamente indentados com TABs acompanhando o nível de aninhamento da função ou condicional circundante, preservando a estética Clean Code sem forçar linhas a colarem na coluna zero.
+    - Se o bloco não requerer expansão de variáveis, envolva o delimitador entre aspas simples (`'EOF'`) para proteção contra expansões prematuras não-intencionais.
+16. **Taxonomia de Emissão: `echo` vs `printf` vs `echo -n`:**
+    - **`echo`:** Padrão para emissão de linhas simples com quebra de linha e escrita atômica em arquivos (`echo "${val}" >| "${file}"`).
+    - **`echo -n $'\e...'`:** Padrão canônico e preferido para sequências de controle de terminal em sessões TTY (`[ -t 1 ]`), com portabilidade universal garantida (FreeBSD `/bin/sh`, Bash, Zsh).
+    - **`printf`:** Reservado exclusivamente para formatação tabular e alinhamento com padding de colunas (`%-12s`, `%-24s`), como em relatórios de benchmark (`scripts/benchmark.sh`). É comando built-in no FreeBSD `/bin/sh` e padrão POSIX mandatário. Não use `printf` para concatenar quebras manuais de linha (`\n`) quando um heredoc `cat <<- 'EOF'` for mais limpo.
+    - **Heredocs (`cat <<- 'EOF'`):** Padrão obrigatório para blocos de configuração multilinhas (`.zshrc`, `.bashrc`, `.zshenv`) e mensagens extensas.
+17. **Guarda de Interatividade Obrigatória (`INTERACTIVE GUARD`):**
+    - Todo arquivo de inicialização de ambiente interativo (`.bashrc`, `.zshrc`, `.shrc`) DEVE iniciar com a guarda canônica:
+        ```sh
+        ### ================================
+        ### INTERACTIVE GUARD
+        ### ================================
+        case "$-" in
+            *i*) ;;
+            *) return ;;
+        esac
+        ```
+    - Impede que ferramentas não-interativas via SSH (`scp`, `sftp`, `rsync`, Git pull/push) ou scripts em lote recebam saídas ANSI, prompts e aliases que quebrem o protocolo de comunicação.
+18. **Auto-Correção Eficiente de `$SHELL`:**
+    - Em shells aninhados (ex: abrir `bash` a partir do `zsh`), o processo filho herda `$SHELL` apontando para o shell pai. A correção deve usar casamento de padrão em memória:
+        ```sh
+        _current_sh="${_DETECTED_SHELL:-$(_detect_shell)}"
+        case "${SHELL:-}" in
+            *"/${_current_sh}") ;;
+            *) export SHELL="$(command -v "${_current_sh}" 2> "/dev/null")" ;;
+        esac
+        unset _current_sh
+        ```
+    - Custos: **0 forks e 0ms** quando `$SHELL` já aponta para o shell atual, corrigindo apenas na divergência.
 
 ---
 

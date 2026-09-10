@@ -136,15 +136,15 @@ fi
 ### Standalone Base Template
 ### --------------------------------
 _generate_rc_pure() {
-	cat << 'EOF'
-### ================================
-### INTERACTIVE GUARD
-### ================================
-case "$-" in
-	*i*) ;;
-	*) return ;;
-esac
-EOF
+	cat <<- 'EOF'
+		### ================================
+		### INTERACTIVE GUARD
+		### ================================
+		case "$-" in
+			*i*) ;;
+			*) return ;;
+		esac
+	EOF
 }
 
 ### --------------------------------
@@ -179,21 +179,21 @@ _install_shell_target() {
 		local _zshenv="${HOME}/.zshenv"
 		local _root_zshenv="/root/.zshenv"
 		if [ ! -f "${_zshenv}" ] || ! grep -qF "unsetopt GLOBAL_RCS" "${_zshenv}" 2> "/dev/null"; then
-			cat << 'EOF' >| "${_zshenv}"
-### ================================
-### ZSH ENVIRONMENT
-### ================================
-unsetopt GLOBAL_RCS
-EOF
+			cat <<- 'EOF' >| "${_zshenv}"
+				### ================================
+				### ZSH ENVIRONMENT
+				### ================================
+				unsetopt GLOBAL_RCS
+			EOF
 		fi
 		if [ "${OS_NAME}" != "windows" ]; then
 			if ! _as_root test -f "${_root_zshenv}" || ! _as_root grep -qF "unsetopt GLOBAL_RCS" "${_root_zshenv}" 2> "/dev/null"; then
-				cat << 'EOF' | _as_root tee "${_root_zshenv}" > "/dev/null"
-### ================================
-### ZSH ENVIRONMENT
-### ================================
-unsetopt GLOBAL_RCS
-EOF
+				cat <<- 'EOF' | _as_root tee "${_root_zshenv}" > "/dev/null"
+					### ================================
+					### ZSH ENVIRONMENT
+					### ================================
+					unsetopt GLOBAL_RCS
+				EOF
 			fi
 		fi
 	fi
@@ -284,39 +284,39 @@ EOF
 	local _setup_block
 
 	if [ "${SHELL_FRAMEWORK}" -eq 1 ]; then
-		_setup_block="$(cat << EOF
+		_setup_block="$(cat <<- EOF
 
-### ================================
-### Shell Environment Setup
-### ================================
-${_repo_dir_line}
-${_context_line}
-export SHELL_FRAMEWORK=1
+			### ================================
+			### Shell Environment Setup
+			### ================================
+			${_repo_dir_line}
+			${_context_line}
+			export SHELL_FRAMEWORK=1
 
-for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
-for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
-unset _f
+			for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+			for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+			unset _f
 
-${_source_line}
-EOF
-)"
+			${_source_line}
+		EOF
+		)"
 	else
-		_setup_block="$(cat << EOF
+		_setup_block="$(cat <<- EOF
 
-### ================================
-### Shell Environment Setup
-### ================================
-${_repo_dir_line}
-${_context_line}
-export SHELL_FRAMEWORK=0
+			### ================================
+			### Shell Environment Setup
+			### ================================
+			${_repo_dir_line}
+			${_context_line}
+			export SHELL_FRAMEWORK=0
 
-for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
-for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
-unset _f
+			for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+			for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
+			unset _f
 
-${_source_line}
-EOF
-)"
+			${_source_line}
+		EOF
+		)"
 	fi
 
 	echo "Target RC file: ${_rc_file}"

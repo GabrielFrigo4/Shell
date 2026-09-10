@@ -61,7 +61,35 @@ Essas diretrizes são de aplicação obrigatória para qualquer modificação ou
 - Scripts executáveis devem usar shebang `#!/usr/bin/env sh`.
 - Comandos `chmod` usam 4 dígitos octais: `chmod 0755` e `chmod 0644`.
 
-## 7. Checklist de Validação
+## 7. Heredocs Indentados, Emissão e Guards Interativos
+
+- **Heredocs Indentados (`cat <<- 'EOF'`):** Em blocos multilinhas e geradores de templates, use SEMPRE `cat <<- 'EOF'`. O hífen `<<-` descarta TABs iniciais (`\t`) das linhas de texto e do próprio delimitador `EOF`, permitindo que o heredoc permaneça perfeitamente alinhado com a indentação da função/condicional circundante sem vazar para a coluna zero. Se não houver interpolação intencional de variáveis, envolva o delimitador entre aspas simples (`'EOF'`).
+- **Taxonomia de Emissão:**
+    - `echo`: Para linhas simples de texto e escrita atômica em arquivos (`echo "${val}" >| "${file}"`).
+    - `echo -n $'\e...'`: Padrão canônico e preferido para sequências ANSI em terminais interativos (`[ -t 1 ]`).
+    - `printf`: Exclusivo para relatórios com tabelas e colunas alinhadas com padding (`%-12s %-24s`).
+- **Guarda de Interatividade (`INTERACTIVE GUARD`):** Todo arquivo gerado (`.bashrc`, `.zshrc`, `.shrc`) DEVE iniciar com:
+    ```sh
+    ### ================================
+    ### INTERACTIVE GUARD
+    ### ================================
+    case "$-" in
+        *i*) ;;
+        *) return ;;
+    esac
+    ```
+    Isso impede que conexões não-interativas (`scp`, `sftp`, `rsync`, Git) quebrem ao receber sequências ANSI ou saídas de terminal.
+- **Auto-Correção Eficiente de `$SHELL`:** Em shells aninhados (ex: abrir `bash` a partir do `zsh`), auto-corrija `$SHELL` usando checagem por casamento de padrão em memória:
+    ```sh
+    _current_sh="${_DETECTED_SHELL:-$(_detect_shell)}"
+    case "${SHELL:-}" in
+        *"/${_current_sh}") ;;
+        *) export SHELL="$(command -v "${_current_sh}" 2> "/dev/null")" ;;
+    esac
+    unset _current_sh
+    ```
+
+## 8. Checklist de Validação
 
 Antes de finalizar qualquer alteração:
 
