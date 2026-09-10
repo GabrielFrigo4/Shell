@@ -26,7 +26,7 @@ _cache_read() {
 ### --------------------------------
 _cache_write() {
 	[ -d "${_SHELL_CACHE_DIR}" ] || command mkdir -p "${_SHELL_CACHE_DIR}" 2> "/dev/null" || return 1
-	printf "%s\n" "${2}" > "${_SHELL_CACHE_DIR}/${1}" 2> "/dev/null"
+	printf "%s\n" "${2}" >| "${_SHELL_CACHE_DIR}/${1}" 2> "/dev/null"
 }
 
 ### --------------------------------
@@ -51,9 +51,9 @@ _cache_clean() {
 ### Detect OS
 ### --------------------------------
 _detect_os() {
-	[ -n "${_DETECTED_OS:-}" ] && echo "${_DETECTED_OS}" && return 0
-	_DETECTED_OS="$(_cache_read "os")"
-	if [ -n "${_DETECTED_OS}" ]; then
+	[ -n "${_DETECTED_OS+x}" ] && echo "${_DETECTED_OS}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/os" ]; then
+		_DETECTED_OS="$(_cache_read "os")"
 		echo "${_DETECTED_OS}"
 		return 0
 	fi
@@ -127,9 +127,9 @@ _detect_shell() {
 ### Detect Distro
 ### --------------------------------
 _detect_distro() {
-	[ -n "${_DETECTED_DISTRO:-}" ] && echo "${_DETECTED_DISTRO}" && return 0
-	_DETECTED_DISTRO="$(_cache_read "distro")"
-	if [ -n "${_DETECTED_DISTRO}" ]; then
+	[ -n "${_DETECTED_DISTRO+x}" ] && echo "${_DETECTED_DISTRO}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/distro" ]; then
+		_DETECTED_DISTRO="$(_cache_read "distro")"
 		echo "${_DETECTED_DISTRO}"
 		return 0
 	fi
@@ -152,9 +152,9 @@ _detect_distro() {
 ### Detect Distro Family
 ### --------------------------------
 _detect_distro_family() {
-	[ -n "${_DETECTED_DISTRO_FAMILY:-}" ] && echo "${_DETECTED_DISTRO_FAMILY}" && return 0
-	_DETECTED_DISTRO_FAMILY="$(_cache_read "distro_family")"
-	if [ -n "${_DETECTED_DISTRO_FAMILY}" ]; then
+	[ -n "${_DETECTED_DISTRO_FAMILY+x}" ] && echo "${_DETECTED_DISTRO_FAMILY}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/distro_family" ]; then
+		_DETECTED_DISTRO_FAMILY="$(_cache_read "distro_family")"
 		echo "${_DETECTED_DISTRO_FAMILY}"
 		return 0
 	fi
@@ -191,9 +191,9 @@ _detect_distro_family() {
 ### Detect Desktop Environment
 ### --------------------------------
 _detect_desktop_environment() {
-	[ -n "${_DETECTED_DESKTOP_ENV:-}" ] && echo "${_DETECTED_DESKTOP_ENV}" && return 0
-	_DETECTED_DESKTOP_ENV="$(_cache_read "desktop_env")"
-	if [ -n "${_DETECTED_DESKTOP_ENV}" ]; then
+	[ -n "${_DETECTED_DESKTOP_ENV+x}" ] && echo "${_DETECTED_DESKTOP_ENV}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/desktop_env" ]; then
+		_DETECTED_DESKTOP_ENV="$(_cache_read "desktop_env")"
 		echo "${_DETECTED_DESKTOP_ENV}"
 		return 0
 	fi
@@ -220,9 +220,9 @@ _detect_desktop_environment() {
 ### Detect Color Scheme
 ### --------------------------------
 _detect_color_scheme() {
-	[ -n "${_DETECTED_COLOR_SCHEME:-}" ] && echo "${_DETECTED_COLOR_SCHEME}" && return 0
-	_DETECTED_COLOR_SCHEME="$(_cache_read "color_scheme")"
-	if [ -n "${_DETECTED_COLOR_SCHEME}" ]; then
+	[ -n "${_DETECTED_COLOR_SCHEME+x}" ] && echo "${_DETECTED_COLOR_SCHEME}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/color_scheme" ]; then
+		_DETECTED_COLOR_SCHEME="$(_cache_read "color_scheme")"
 		echo "${_DETECTED_COLOR_SCHEME}"
 		return 0
 	fi
@@ -275,9 +275,9 @@ _detect_color_scheme() {
 ### Detect GTK Theme
 ### --------------------------------
 _detect_gtk_theme() {
-	[ -n "${_DETECTED_GTK_THEME:-}" ] && echo "${_DETECTED_GTK_THEME}" && return 0
-	_DETECTED_GTK_THEME="$(_cache_read "gtk_theme")"
-	if [ -n "${_DETECTED_GTK_THEME}" ]; then
+	[ -n "${_DETECTED_GTK_THEME+x}" ] && echo "${_DETECTED_GTK_THEME}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/gtk_theme" ]; then
+		_DETECTED_GTK_THEME="$(_cache_read "gtk_theme")"
 		echo "${_DETECTED_GTK_THEME}"
 		return 0
 	fi
@@ -320,9 +320,9 @@ _detect_gtk_theme() {
 ### Detect Qt Theme
 ### --------------------------------
 _detect_qt_theme() {
-	[ -n "${_DETECTED_QT_THEME:-}" ] && echo "${_DETECTED_QT_THEME}" && return 0
-	_DETECTED_QT_THEME="$(_cache_read "qt_theme")"
-	if [ -n "${_DETECTED_QT_THEME}" ]; then
+	[ -n "${_DETECTED_QT_THEME+x}" ] && echo "${_DETECTED_QT_THEME}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/qt_theme" ]; then
+		_DETECTED_QT_THEME="$(_cache_read "qt_theme")"
 		echo "${_DETECTED_QT_THEME}"
 		return 0
 	fi
@@ -347,9 +347,9 @@ _detect_qt_theme() {
 ### Detect Qt Platform Theme
 ### --------------------------------
 _detect_qt_platform_theme() {
-	[ -n "${_DETECTED_QT_PLATFORM_THEME:-}" ] && echo "${_DETECTED_QT_PLATFORM_THEME}" && return 0
-	_DETECTED_QT_PLATFORM_THEME="$(_cache_read "qt_platform_theme")"
-	if [ -n "${_DETECTED_QT_PLATFORM_THEME}" ]; then
+	[ -n "${_DETECTED_QT_PLATFORM_THEME+x}" ] && echo "${_DETECTED_QT_PLATFORM_THEME}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/qt_platform_theme" ]; then
+		_DETECTED_QT_PLATFORM_THEME="$(_cache_read "qt_platform_theme")"
 		echo "${_DETECTED_QT_PLATFORM_THEME}"
 		return 0
 	fi
@@ -390,9 +390,9 @@ _detect_qt_platform_theme() {
 ### Detect Eza/Exa Binary
 ### --------------------------------
 _detect_eza() {
-	[ -n "${_DETECTED_EZA:-}" ] && echo "${_DETECTED_EZA}" && return 0
-	_DETECTED_EZA="$(_cache_read "eza")"
-	if [ -n "${_DETECTED_EZA}" ]; then
+	[ -n "${_DETECTED_EZA+x}" ] && echo "${_DETECTED_EZA}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/eza" ]; then
+		_DETECTED_EZA="$(_cache_read "eza")"
 		echo "${_DETECTED_EZA}"
 		return 0
 	fi
@@ -416,9 +416,9 @@ _detect_eza() {
 ### Detect Bat/Batcat Binary
 ### --------------------------------
 _detect_bat() {
-	[ -n "${_DETECTED_BAT:-}" ] && echo "${_DETECTED_BAT}" && return 0
-	_DETECTED_BAT="$(_cache_read "bat")"
-	if [ -n "${_DETECTED_BAT}" ]; then
+	[ -n "${_DETECTED_BAT+x}" ] && echo "${_DETECTED_BAT}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/bat" ]; then
+		_DETECTED_BAT="$(_cache_read "bat")"
 		echo "${_DETECTED_BAT}"
 		return 0
 	fi
@@ -440,9 +440,9 @@ _detect_bat() {
 ### Detect Ripgrep Binary
 ### --------------------------------
 _detect_rg() {
-	[ -n "${_DETECTED_RG:-}" ] && echo "${_DETECTED_RG}" && return 0
-	_DETECTED_RG="$(_cache_read "rg")"
-	if [ -n "${_DETECTED_RG}" ]; then
+	[ -n "${_DETECTED_RG+x}" ] && echo "${_DETECTED_RG}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/rg" ]; then
+		_DETECTED_RG="$(_cache_read "rg")"
 		echo "${_DETECTED_RG}"
 		return 0
 	fi
@@ -464,9 +464,9 @@ _detect_rg() {
 ### Detect Rust Fd-Find Binary
 ### --------------------------------
 _detect_fd() {
-	[ -n "${_DETECTED_FD:-}" ] && echo "${_DETECTED_FD}" && return 0
-	_DETECTED_FD="$(_cache_read "fd")"
-	if [ -n "${_DETECTED_FD}" ]; then
+	[ -n "${_DETECTED_FD+x}" ] && echo "${_DETECTED_FD}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/fd" ]; then
+		_DETECTED_FD="$(_cache_read "fd")"
 		echo "${_DETECTED_FD}"
 		return 0
 	fi
@@ -490,9 +490,9 @@ _detect_fd() {
 ### Detect Privilege Escalator
 ### --------------------------------
 _detect_privilege_escalator() {
-	[ -n "${_DETECTED_ESCALATOR:-}" ] && echo "${_DETECTED_ESCALATOR}" && return 0
-	_DETECTED_ESCALATOR="$(_cache_read "escalator")"
-	if [ -n "${_DETECTED_ESCALATOR}" ]; then
+	[ -n "${_DETECTED_ESCALATOR+x}" ] && echo "${_DETECTED_ESCALATOR}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/escalator" ]; then
+		_DETECTED_ESCALATOR="$(_cache_read "escalator")"
 		echo "${_DETECTED_ESCALATOR}"
 		return 0
 	fi
@@ -528,9 +528,9 @@ _is_raw_tty() {
 ### Detect Kernel Release
 ### --------------------------------
 _detect_kernel_release() {
-	[ -n "${_DETECTED_KERNEL_RELEASE:-}" ] && echo "${_DETECTED_KERNEL_RELEASE}" && return 0
-	_DETECTED_KERNEL_RELEASE="$(_cache_read "kernel_release")"
-	if [ -n "${_DETECTED_KERNEL_RELEASE}" ]; then
+	[ -n "${_DETECTED_KERNEL_RELEASE+x}" ] && echo "${_DETECTED_KERNEL_RELEASE}" && return 0
+	if [ -f "${_SHELL_CACHE_DIR}/kernel_release" ]; then
+		_DETECTED_KERNEL_RELEASE="$(_cache_read "kernel_release")"
 		echo "${_DETECTED_KERNEL_RELEASE}"
 		return 0
 	fi
