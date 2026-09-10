@@ -229,9 +229,10 @@ case "$-" in
 esac
 
 ### --------------------------------
-### Shell History
+### Shell Options & History
 ### --------------------------------
 HISTSIZE=5000
+set -C
 EOF
 }
 
@@ -380,7 +381,6 @@ EOF
 ${_repo_dir_line}
 ${_context_line}
 export SHELL_FRAMEWORK=0
-export SHELL_PURE=1
 
 for _f in "\${SHELL_REPO_DIR}/library/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
 for _f in "\${SHELL_REPO_DIR}/core/"*.sh; do [ -f "\${_f}" ] && ${_source_cmd} "\${_f}"; done
