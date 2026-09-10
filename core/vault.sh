@@ -12,12 +12,18 @@ VAULT_DIR="${VAULT_DIR:-${HOME}/.vault}"
 ### --------------------------------
 ### SSH Keys
 ### --------------------------------
-if [ -n "${SSH_AUTH_SOCK}" ] && [ -S "${SSH_AUTH_SOCK}" ] && [ -z "${SSH_AUTH_CHECKED:-}" ]; then
-	if ! ssh-add -l > "/dev/null" 2>&1; then
-		command -v vault-keys > "/dev/null" 2>&1 && vault-keys > "/dev/null" 2>&1
+_ssh_cache="${_SHELL_CACHE_DIR:-${XDG_RUNTIME_DIR:-/tmp}/.universal_shell_cache_${USER:-user}}/ssh_agent_verified"
+if [ -n "${SSH_AUTH_SOCK}" ] && [ -S "${SSH_AUTH_SOCK}" ]; then
+	if [ -z "${SSH_AUTH_CHECKED:-}" ] && [ ! -f "${_ssh_cache}" ]; then
+		if ! ssh-add -l > "/dev/null" 2>&1; then
+			command -v vault-keys > "/dev/null" 2>&1 && vault-keys > "/dev/null" 2>&1
+		fi
+		[ -d "${_SHELL_CACHE_DIR:-}" ] && : >| "${_ssh_cache}" 2> "/dev/null" || true
+		export SSH_AUTH_CHECKED=1
 	fi
-	export SSH_AUTH_CHECKED=1
 fi
+unset _ssh_cache
+
 
 ### --------------------------------
 ### Update Vault

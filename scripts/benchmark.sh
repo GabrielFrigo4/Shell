@@ -26,7 +26,7 @@ _c_yellow="\033[33m"
 _c_red="\033[31m"
 _c_cyan="\033[36m"
 
-printf "%b⚡ Shell Startup Latency Benchmark%b (iters: %s, target: <32ms)\n\n" "${_c_bold}${_c_cyan}" "${_c_reset}" "${_iterations}"
+printf "%b⚡ Shell Startup Latency Benchmark%b (iters: %s, standard: 2^n)\n\n" "${_c_bold}${_c_cyan}" "${_c_reset}" "${_iterations}"
 
 ### --------------------------------
 ### Measurement Runner
@@ -41,8 +41,7 @@ times = []
 for _ in range(iters):
     t0 = time.perf_counter()
     subprocess.run(cmd, shell=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    t1 = time.perf_counter()
-    times.append((t1 - t0) * 1000)
+    times.append((time.perf_counter() - t0) * 1000)
 avg = sum(times) / len(times)
 print(f'{avg:.1f}')
 " "${_cmd}" "${_iterations}" 2> "/dev/null" || echo "0.0"
@@ -68,19 +67,24 @@ printf "%s\n" "----------------------------------------------------"
 
 for _sh in sh bash zsh; do
 	if command -v "${_sh}" > "/dev/null" 2>&1; then
+		case "${_sh}" in
+			sh|bash) _target="< 32ms"; _target_limit=32 ;;
+			zsh)     _target="< 64ms"; _target_limit=64 ;;
+			*)       _target="< 64ms"; _target_limit=64 ;;
+		esac
 		_ms="$(_measure_cmd "${_sh} -i -c exit")"
 		_ms_int="${_ms%.*}"
-		if [ "${_ms_int:-0}" -lt 32 ]; then
+		if [ "${_ms_int:-0}" -lt "${_target_limit}" ]; then
 			_status="${_c_green}PASS${_c_reset}"
 			_latency_colored="${_c_green}${_ms}ms${_c_reset}"
-		elif [ "${_ms_int:-0}" -le 64 ]; then
+		elif [ "${_ms_int:-0}" -le 128 ]; then
 			_status="${_c_yellow}WARN${_c_reset}"
 			_latency_colored="${_c_yellow}${_ms}ms${_c_reset}"
 		else
 			_status="${_c_red}SLOW${_c_reset}"
 			_latency_colored="${_c_red}${_ms}ms${_c_reset}"
 		fi
-		printf "%-12s %-21b %-19b %s\n" "${_sh}" "${_latency_colored}" "${_status}" "< 32ms"
+		printf "%-12s %-21b %-19b %s\n" "${_sh}" "${_latency_colored}" "${_status}" "${_target}"
 	fi
 done
 

@@ -12,7 +12,9 @@ unset CDPATH
 ### --------------------------------
 ### Auto-Correct SHELL
 ### --------------------------------
-export SHELL="$(command -v "$(_detect_shell)" 2> "/dev/null")"
+if [ -z "${SHELL:-}" ]; then
+	export SHELL="$(command -v "${_DETECTED_SHELL:-$(_detect_shell)}" 2> "/dev/null")"
+fi
 
 ### --------------------------------
 ### Privilege Escalation Aliases
@@ -76,12 +78,15 @@ alias e="editor"
 ### --------------------------------
 ### Package Compatibility Aliases
 ### --------------------------------
-_bat_bin="$(_detect_bat)"
+_env_os="${_DETECTED_OS:-$(_detect_os)}"
+_bat_bin="${_DETECTED_BAT:-$(_detect_bat)}"
+_fd_bin="${_DETECTED_FD:-$(_detect_fd)}"
+_eza_bin="${_DETECTED_EZA:-$(_detect_eza)}"
+_rg_bin="${_DETECTED_RG:-$(_detect_rg)}"
+
 [ "${_bat_bin}" = "batcat" ] && alias bat="batcat"
-_fd_bin="$(_detect_fd)"
 [ "${_fd_bin}" = "fdfind" ] && alias fd="fdfind"
 [ "${_fd_bin}" = "fd-find" ] && alias fd="fd-find"
-unset _bat_bin _fd_bin
 
 ### --------------------------------
 ### Directory Listing
@@ -89,7 +94,7 @@ unset _bat_bin _fd_bin
 unalias ls 2> "/dev/null" || true
 eval 'ls() {
 	if [ -t 1 ] && ! _is_raw_tty; then
-		local _eza_cmd="$(_detect_eza)"
+		local _eza_cmd="${_DETECTED_EZA:-$(_detect_eza)}"
 		case "${_eza_cmd}" in
 			*eza)
 				command "${_eza_cmd}" --icons=auto --group-directories-first "$@"
@@ -102,14 +107,14 @@ eval 'ls() {
 		esac
 	fi
 
-	if [ "$(_detect_os)" = "freebsd" ]; then
+	if [ "${_DETECTED_OS:-$(_detect_os)}" = "freebsd" ]; then
 		command ls -G "$@"
 	else
 		command ls --color=auto "$@"
 	fi
 }'
 
-if [ "$(_detect_os)" = "freebsd" ]; then
+if [ "${_env_os}" = "freebsd" ]; then
 	_ls_l="ls -lG"
 	_ls_ll="ls -laFoG"
 	_ls_la="ls -aG"
@@ -119,7 +124,6 @@ else
 	_ls_la="ls -a --color=auto"
 fi
 
-_eza_bin="$(_detect_eza)"
 if _is_raw_tty || [ -z "${_eza_bin}" ]; then
 	alias l="${_ls_l}"
 	alias ll="${_ls_ll}"
@@ -149,23 +153,22 @@ unset _ls_l _ls_ll _ls_la _eza_bin
 unalias grep 2> "/dev/null" || true
 eval 'grep() {
 	if [ -t 1 ] && ! _is_raw_tty; then
-		local _rg_cmd="$(_detect_rg)"
+		local _rg_cmd="${_DETECTED_RG:-$(_detect_rg)}"
 		if [ -n "${_rg_cmd}" ]; then
 			command "${_rg_cmd}" --smart-case "$@"
 			return $?
 		fi
 	fi
-	if [ "$(_detect_os)" = "freebsd" ]; then
+	if [ "${_DETECTED_OS:-$(_detect_os)}" = "freebsd" ]; then
 		command grep "$@"
 	else
 		command grep --color=auto "$@"
 	fi
 }'
 
-_rg_bin="$(_detect_rg)"
 if [ -n "${_rg_bin}" ]; then
 	alias g="${_rg_bin} --smart-case"
-elif [ "$(_detect_os)" = "freebsd" ]; then
+elif [ "${_env_os}" = "freebsd" ]; then
 	alias g="egrep -i"
 else
 	alias g="grep -Ei"
@@ -178,7 +181,7 @@ unset _rg_bin
 unalias cat 2> "/dev/null" || true
 eval 'cat() {
 	if [ -t 1 ] && ! _is_raw_tty; then
-		local _bat_cmd="$(_detect_bat)"
+		local _bat_cmd="${_DETECTED_BAT:-$(_detect_bat)}"
 		if [ -n "${_bat_cmd}" ]; then
 			command "${_bat_cmd}" --paging=never "$@"
 			return $?
@@ -187,7 +190,6 @@ eval 'cat() {
 	command cat "$@"
 }'
 
-_bat_bin="$(_detect_bat)"
 if [ -n "${_bat_bin}" ]; then
 	alias c="${_bat_bin} --paging=never"
 	alias b="${_bat_bin}"
@@ -202,7 +204,7 @@ unset _bat_bin
 unalias find 2> "/dev/null" || true
 eval 'find() {
 	if [ -t 1 ] && ! _is_raw_tty; then
-		local _fd_cmd="$(_detect_fd)"
+		local _fd_cmd="${_DETECTED_FD:-$(_detect_fd)}"
 		if [ -n "${_fd_cmd}" ]; then
 			for _arg in "$@"; do
 				case "${_arg}" in
@@ -219,7 +221,6 @@ eval 'find() {
 	command find "$@"
 }'
 
-_fd_bin="$(_detect_fd)"
 if [ -n "${_fd_bin}" ]; then
 	alias f="${_fd_bin}"
 	alias ff="${_fd_bin} --hidden --no-ignore"
@@ -227,7 +228,7 @@ else
 	alias f="find"
 	alias ff="find"
 fi
-unset _fd_bin
+unset _fd_bin _env_os
 
 ### --------------------------------
 ### Navigation Aliases

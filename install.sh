@@ -175,6 +175,20 @@ _install_shell_target() {
 		_as_root rm -f "${_root_rc_file}"
 	fi
 
+	if [ "${_target_shell}" = "zsh" ]; then
+		local _zshenv="${HOME}/.zshenv"
+		local _root_zshenv="/root/.zshenv"
+		if [ ! -f "${_zshenv}" ] || ! grep -qF "unsetopt GLOBAL_RCS" "${_zshenv}" 2> "/dev/null"; then
+			printf "%b\n" "### ================================\n### ZSH ENVIRONMENT\n### ================================\nunsetopt GLOBAL_RCS" >| "${_zshenv}"
+		fi
+		if [ "${OS_NAME}" != "windows" ]; then
+			if ! _as_root test -f "${_root_zshenv}" || ! _as_root grep -qF "unsetopt GLOBAL_RCS" "${_root_zshenv}" 2> "/dev/null"; then
+				printf "%b\n" "### ================================\n### ZSH ENVIRONMENT\n### ================================\nunsetopt GLOBAL_RCS" | _as_root tee "${_root_zshenv}" > "/dev/null"
+			fi
+		fi
+	fi
+
+
 	if [ "${SHELL_FRAMEWORK}" -eq 0 ]; then
 		_generate_rc_pure >| "${_rc_file}"
 		if [ "${OS_NAME}" != "windows" ]; then
